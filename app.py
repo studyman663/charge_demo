@@ -8,8 +8,8 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from finishChecker import check_finish
-from resources import user_register, user_login, token_refresh, all_users, sys_time, user_charge, sys_ping
-from models import Charger, ChargeRequest
+from resources import user_register, user_login, token_refresh, sys_time, user_charge, sys_ping, finish_charge
+from models import Charger, ChargeRequest, User
 from apscheduler.schedulers.background import BackgroundScheduler
 
 def init_pile():
@@ -17,6 +17,8 @@ def init_pile():
         types = ['F','F', 'T', 'T', 'T']
         for t in types:
             Charger(type=t).save_to_db()
+    if not db.session.query(User).filter(User.username=='admin_bupt_10').first():
+        User(username='admin_bupt_10',password='admin_bupt_10',admin=True).save_to_db()
 def run_check():
     with app.app_context():
         check_finish()
@@ -48,8 +50,8 @@ scheduler.start()
 api.add_resource(user_register, '/user/register')
 api.add_resource(user_login, '/user/login')
 api.add_resource(token_refresh, '/token/refresh')
-api.add_resource(all_users, '/users')
-api.add_resource(user_charge, '/charge')
+api.add_resource(user_charge, '/charge')          #充电请求的增删改查
+api.add_resource(finish_charge, '/charge/finish') #主动结束充电
 api.add_resource(sys_time, '/time')
 api.add_resource(sys_ping, '/ping')
 
