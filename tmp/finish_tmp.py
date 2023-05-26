@@ -1,8 +1,8 @@
 import asyncio
 import datetime
-from models import *
-from Timer import Timer
-from schedule import schedule
+from 后端.models import *
+from 后端.Timer import Timer
+from 后端.schedule import schedule
 
 async def check_finish():
     while True:

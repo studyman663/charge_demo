@@ -1,5 +1,3 @@
-import time
-
 import config
 from exts import db
 import datetime
@@ -9,7 +7,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from finishChecker import check_finish
 from resources import user_register, user_login, token_refresh, sys_time, user_charge, sys_ping, finish_charge
-from models import Charger, ChargeRequest, User
+from models import Charger, User
 from apscheduler.schedulers.background import BackgroundScheduler
 
 def init_pile():

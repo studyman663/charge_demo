@@ -1,17 +1,13 @@
-from exts import db
-import datetime
-from config import *
 import asyncio
 from flask import Flask,jsonify
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from threading import Thread
 
-from finishChecker import end_charging_request, check_finish
-from resources import *
-from models import *
+from 后端.finishChecker import check_finish
+from 后端.resources import *
+from 后端.models import *
 
 def init_pile():
     if not db.session.query(Charger).first():
