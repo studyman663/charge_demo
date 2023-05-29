@@ -39,10 +39,10 @@ def end_charging_request(user, end_time):
         record_id = str(db.session.query(ChargeRecord).count() + 1)
         # 如果当前不在充电:直接生成充电详单
         if request.state != 3:
-            charge_record = ChargeRecord(id=record_id, order_id=order_id, create_time=create_time,
-                                         charged_amount='%.2f' % 0, charged_time='%.2f' % 0, begin_time='%.2f' % 0,
-                                         end_time='%.2f' % 0, charging_cost='%.2f' % 0, service_cost='%.2f' % 0,
-                                         total_cost='%.2f' % 0, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
+            charge_record = ChargeRecord(id=record_id, order_id=order_id, created_at=create_time,
+                                         chargeAmount='%.2f' % 0, charged_time='%.2f' % 0, chargeStartTime='%.2f' % 0,
+                                         chargeEndTime='%.2f' % 0, chargeFee='%.2f' % 0, serviceFee='%.2f' % 0,
+                                         totalFee='%.2f' % 0, pileId=request.charge_pile_id, userId=user.id,updated_at=create_time
                                          )
             db.session.add(charge_record)
             db.session.commit()
@@ -114,14 +114,14 @@ def end_charging_request(user, end_time):
             charging_cost = float('%.2f' % charging_cost)  # 充电费用
             total_cost = service_cost + charging_cost  # 总费用
             # 添加充电详单
-            charge_record = ChargeRecord(id=record_id, order_id=order_id, create_time=create_time,
-                                         charged_amount=charged_amount, charged_time=charged_time,
-                                         begin_time=begin_time.strftime(
+            charge_record = ChargeRecord(id=record_id, order_id=order_id, created_at=create_time,
+                                         chargeAmount=charged_amount, charged_time=charged_time,
+                                         chargeStartTime=begin_time.strftime(
                                              "%Y-%m-%d %H:%M:%S"),
-                                         end_time=end_time.strftime(
+                                         chargeEndTime=end_time.strftime(
                                              "%Y-%m-%d %H:%M:%S"),
-                                         charging_cost=charging_cost, service_cost=service_cost,
-                                         total_cost=total_cost, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
+                                         chargeFee=charging_cost, serviceFee=service_cost,
+                                         totalFee=total_cost, pileId=request.charge_pile_id, userId=user.id,updated_at=create_time
                                          )
             db.session.add(charge_record)
             db.session.commit()

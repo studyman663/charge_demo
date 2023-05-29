@@ -330,10 +330,10 @@ class finish_charge(Resource):
             record_id = str(db.session.query(ChargeRecord).count() + 1)
             # 如果当前不在充电:直接生成充电详单
             if request.state != 3:
-                charge_record = ChargeRecord(id=record_id, order_id=order_id, create_time=create_time,
-                                             charged_amount='%.2f' % 0, charged_time='%.2f' % 0, begin_time='%.2f' % 0,
-                                             end_time='%.2f' % 0, charging_cost='%.2f' % 0, service_cost='%.2f' % 0,
-                                             total_cost='%.2f' % 0, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
+                charge_record = ChargeRecord(id=record_id, order_id=order_id, created_at=create_time,
+                                             chargeAmount='%.2f' % 0, charged_time='%.2f' % 0, chargeStartTime='%.2f' % 0,
+                                             chargeEndTime='%.2f' % 0, chargeFee='%.2f' % 0, serviceFee='%.2f' % 0,
+                                             totalFee='%.2f' % 0, pileId=request.charge_pile_id, userId=user.id,updated_at=create_time
                                              )
                 charge_record.save_to_db()
             # 如果当前正在充电，计算后再创建充电详单 question：算法尚未测试
@@ -406,14 +406,14 @@ class finish_charge(Resource):
                 charging_cost = float('%.2f' % charging_cost)  # 充电费用
                 total_cost = service_cost + charging_cost  # 总费用
                 # 添加充电详单
-                charge_record = ChargeRecord(id=record_id, order_id=order_id, create_time=create_time,
-                                             charged_amount=charged_amount, charged_time=charged_time,
-                                             begin_time=begin_time.strftime(
+                charge_record = ChargeRecord(id=record_id, order_id=order_id, created_at=create_time,
+                                             chargeAmount=charged_amount, charged_time=charged_time,
+                                             chargeStartTime=begin_time.strftime(
                                                  "%Y-%m-%d %H:%M:%S"),
-                                             end_time=end_time.strftime(
+                                             chargeEndTime=end_time.strftime(
                                                  "%Y-%m-%d %H:%M:%S"),
-                                             charging_cost=charging_cost, service_cost=service_cost,
-                                             total_cost=total_cost, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
+                                             chargeFee=charging_cost, serviceFee=service_cost,
+                                             totalFee=total_cost, pileId=request.charge_pile_id, userId=user.id,updated_at=create_time
                                              )
                 charge_record.save_to_db()
                 # 更新充电桩信息
@@ -449,21 +449,8 @@ class finish_charge(Resource):
             db.session.commit()
         if success:
             record = db.session.query(ChargeRecord).filter(
-                ChargeRecord.user_id == user.id).order_by(ChargeRecord.id.desc()).first()
-            return {
-                "chargeAmount": record.charged_amount,
-                "chargeEndTime": record.end_time,
-                "chargeFee": record.charging_cost,
-                "chargeStartTime": record.begin_time,
-                "created_at": record.create_time,
-                "deleted_at": 'null',
-                "id": record.order_id,
-                "pileId": record.pile_id,
-                "serviceFee": record.service_cost,
-                "totalFee": record.total_cost,
-                "updated_at": record.create_time,
-                "userId": record.user_id
-            }
+                ChargeRecord.userId == user.id).order_by(ChargeRecord.id.desc()).first()
+            return marshal(record,charge_record_fields)
         else:
             return {
                 "code": -1,
@@ -479,20 +466,7 @@ class get_single_bill(Resource):
                 "message": "未找到充电订单"
             }
         else:
-            return {
-                "chargeAmount": record.charged_amount,
-                "chargeEndTime": record.end_time,
-                "chargeFee": record.charging_cost,
-                "chargeStartTime": record.begin_time,
-                "created_at": record.create_time,
-                "deleted_at": 'null',
-                "id": record.order_id,
-                "pileId": record.pile_id,
-                "serviceFee": record.service_cost,
-                "totalFee": record.total_cost,
-                "updated_at": record.create_time,
-                "userId": record.user_id
-            }
+            return marshal(record,charge_record_fields)
 class get_bills(Resource):
     @jwt_required()
     def get(self):
@@ -511,6 +485,8 @@ class get_bills(Resource):
         else:
             if limit==-1:
                 return marshal(record_list[skip:],charge_record_fields)
+            else:
+                return marshal(record_list[skip:skip+limit], charge_record_fields)
 
 class sys_time(Resource):
     def get(self):

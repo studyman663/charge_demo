@@ -86,18 +86,18 @@ class ChargeRecord(db.Model):
     __tablename__ = 'charge_record'
     id = db.Column(db.String(20), primary_key=True)  # 编号
     order_id = db.Column(db.String(20))  # 订单号
-    create_time = db.Column(db.String(20))  # 详单生成时间
-    charged_amount = db.Column(db.Float)  # 充电电量
+    created_at = db.Column(db.String(20))  # 详单生成时间
+    chargeAmount = db.Column(db.Float)  # 充电电量
     charged_time = db.Column(db.Integer)  # 充电时长
-    begin_time = db.Column(db.String(20))  # 开始充电时间
-    end_time = db.Column(db.String(20))  # 结束时间
-    delete_time=db.Column(db.String(20),default='null')  # 删除时间
-    update_time=db.Column(db.String(20))  # 更新时间
-    charging_cost = db.Column(db.Float)  # 充电费用
-    service_cost = db.Column(db.Float)  # 服务费用
-    total_cost = db.Column(db.Float)  # 总费用
-    pile_id = db.Column(db.String(20))  # 充电桩号
-    user_id = db.Column(db.String(20))  # 用户id
+    chargeStartTime = db.Column(db.String(20))  # 开始充电时间
+    chargeEndTime = db.Column(db.String(20))  # 结束时间
+    deleted_at=db.Column(db.String(20),default='null')  # 删除时间
+    updated_at=db.Column(db.String(20))  # 更新时间
+    chargeFee = db.Column(db.Float)  # 充电费用
+    serviceFee = db.Column(db.Float)  # 服务费用
+    totalFee = db.Column(db.Float)  # 总费用
+    pileId = db.Column(db.String(20))  # 充电桩号
+    userId = db.Column(db.String(20))  # 用户id
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()

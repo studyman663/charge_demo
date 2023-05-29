@@ -43,7 +43,7 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
             request_id = None
         # 写数据库:充电区队列、等候区队列，结束充电时间、即下一辆车开始充电时间;充电状态，新来的车充电信息
         db.session.query(ChargeRecord).filter(ChargeRecord.id == charge_done.id).update({
-            "end_time": Timer().get_cur_format_time()
+            "chargeEndTime": Timer().get_cur_format_time()
         })
         db.session.query(Charger).filter(Charger.id == charge_done.charge_pile_id).update({
             "cumulative_usage_times": db.session.query(Charger.cumulative_usage_times).filter(Charger.id == charge_done.charge_pile_id).first()[0] + 1,
