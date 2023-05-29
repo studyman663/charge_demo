@@ -1,12 +1,13 @@
 import config
 from exts import db
 import datetime
-from flask import Flask,jsonify
-from flask_restful import Api
+from flask import Flask, jsonify, request
+from flask_restful import Api, reqparse
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from finishChecker import check_finish
-from resources import user_register, user_login, token_refresh, sys_time, user_charge, sys_ping, finish_charge
+from resources import user_register, user_login, token_refresh, sys_time, user_charge, sys_ping, finish_charge, \
+    get_single_bill, get_bills
 from models import Charger, User
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -50,6 +51,8 @@ api.add_resource(user_login, '/user/login')
 api.add_resource(token_refresh, '/token/refresh')
 api.add_resource(user_charge, '/charge')          #充电请求的增删改查
 api.add_resource(finish_charge, '/charge/finish') #主动结束充电
+api.add_resource(get_single_bill,'/charge/bill/<int:billId>')
+api.add_resource(get_bills,'/charge/bills')
 api.add_resource(sys_time, '/time')
 api.add_resource(sys_ping, '/ping')
 
@@ -59,7 +62,17 @@ api.add_resource(sys_ping, '/ping')
 #     with app.app_context():
 #         thread = threading.Thread(target=check_finish)
 #         thread.start()
-
+# @app.route("/charge/bills", methods=['GET'])
+# def get():
+#     parser = reqparse.RequestParser()
+#     parser.add_argument('limit', type=int, help='每页数量', default=-1, required=False)
+#     parser.add_argument('skip', type=int, help='偏移量', default=0, required=False)
+#     if request.method == 'GET' and request.content_type == 'application/json':
+#         request.get_json(force=True, silent=True)
+#     args = parser.parse_args()
+#     limit = args.limit
+#     skip = args.skip
+#     return 'OK'
 @app.route('/')
 def index():
     return jsonify({'message': 'Hello, World!'})

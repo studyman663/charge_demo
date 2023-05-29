@@ -41,7 +41,7 @@ class User(db.Model):
     def verify_hash(password, hash):
         return sha256.verify(password, hash)
 
-class Charger(db.Model):
+class Charger(db.Model): #充电桩信息
     __tablename__ = 'charger'
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     charger_status = db.Column(db.Enum('RUNNING', 'SHUTDOWN', 'UNAVAILABLE'),default='RUNNING')
@@ -56,7 +56,7 @@ class Charger(db.Model):
         db.session.add(self)
         db.session.commit()
 
-class ChargeArea(db.Model):
+class ChargeArea(db.Model): #每个充电桩的充电区内正在充电和正在等待的充电请求号
     __tablename__ = 'charge_area'
     pile_id = db.Column(db.String(20))  # 充电桩号
     request_id = db.Column(db.String(20), primary_key=True)
@@ -91,6 +91,8 @@ class ChargeRecord(db.Model):
     charged_time = db.Column(db.Integer)  # 充电时长
     begin_time = db.Column(db.String(20))  # 开始充电时间
     end_time = db.Column(db.String(20))  # 结束时间
+    delete_time=db.Column(db.String(20),default='null')  # 删除时间
+    update_time=db.Column(db.String(20))  # 更新时间
     charging_cost = db.Column(db.Float)  # 充电费用
     service_cost = db.Column(db.Float)  # 服务费用
     total_cost = db.Column(db.Float)  # 总费用

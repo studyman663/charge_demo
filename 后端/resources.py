@@ -1,7 +1,8 @@
 import datetime,pytz
 from decimal import Decimal
 
-from flask_restful import Resource, reqparse
+from flask import request
+from flask_restful import Resource, reqparse, fields, marshal_with, marshal
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt)
 from sqlalchemy import and_
 
@@ -11,7 +12,20 @@ from config import *
 from models import User, ChargeRequest, WaitQueue, WaitArea, ChargeRecord, Charger, ChargeArea, ChargeWaitArea
 from schedule import schedule
 
-
+charge_record_fields = {
+        "chargeAmount": fields.Float,
+        "chargeEndTime": fields.String,
+        "chargeFee": fields.Float,
+        "chargeStartTime": fields.String,
+        "created_at": fields.String,
+        "deleted_at": fields.String,
+        "id": fields.String,
+        "pileId": fields.String,
+        "serviceFee": fields.Float,
+        "totalFee": fields.Float,
+        "updated_at": fields.String,
+        "userId": fields.String
+    }
 def username_validate(value, name):
     if len(value) < 6 or len(value) > 20:
         raise ValueError(name + '长度不合法')
@@ -29,7 +43,7 @@ class token_refresh(Resource):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
         return {
-          "code": 200,
+          "code": 0,
           "expire": expire_time_utc.isoformat(),
           "token": access_token
         }
@@ -42,7 +56,7 @@ class user_register(Resource):
         data = parser.parse_args()
         if User.find_by_username(data['username']):
             return {
-                'code':400,
+                "code": -1,
                 'message': f'User {data["username"]} already exists'
             }
         new_user = User(
@@ -52,7 +66,7 @@ class user_register(Resource):
         try:
             new_user.save_to_db()
             return {
-                'code':200,
+                "code": 0,
                 'message': f'User {data["username"]} was created'
             }
         except:
@@ -69,14 +83,14 @@ class user_login(Resource):
         current_user = User.find_by_username(data['username'])
         if not current_user:
             return {
-                'code':400,
+                "code": -1,
                 'message': 'User {} doesn\'t exist'.format(data['username'])
                 }
         if User.verify_hash(data['password'], current_user.password):
             access_token = create_access_token(identity=data['username'])
             refresh_token = create_refresh_token(identity=data['username'])
             return {
-                'code':200,
+                "code": 0,
                 # 'message': f'Logged in as {current_user.username}',
                 "expire": expire_time_utc.isoformat(),
                 "token": access_token
@@ -99,7 +113,7 @@ class user_charge(Resource):
             return {
                 "amount": request.require_amount,
                 "chargingArea": c_area,
-                "code": 200,
+                "code": 0,
                 "fast": fast,
                 "pile": request.charge_pile_id,
                 "position": request.charge_id,
@@ -109,7 +123,7 @@ class user_charge(Resource):
             }
         else:
             return {
-                "code": 400,
+                "code": -1,
                 "message": '该用户无充电状态'
             }
 
@@ -142,7 +156,6 @@ class user_charge(Resource):
                         and_(ChargeRequest.charge_mode == charge_mode, ChargeRequest.state != 0)).all()
                     res = max([int(i.charge_id[1:]) for i in res_raw])
                     charge_id = charge_mode + str(res + 1)
-
                 if charge_mode == "F":
                     charge_time = Decimal(require_amount) / fast_power * 3600
                 elif charge_mode == "T":
@@ -180,7 +193,7 @@ class user_charge(Resource):
             return {
                 "amount": data['amount'],
                 "chargingArea": c_area,
-                "code": 200,
+                "code": 0,
                 "fast": data['fast'],
                 "pile": pile,
                 "position": position,
@@ -190,7 +203,7 @@ class user_charge(Resource):
             }
         else:
             return {
-                "code": 400,
+                "code": -1,
                 "message": error_msg
             }
     @jwt_required()
@@ -231,7 +244,6 @@ class user_charge(Resource):
                     "charge_id": charge_id,
                     "type": charge_mode
                 })
-
                 schedule(2, record.id)
             # 修改后数据写入数据库
             db.session.query(ChargeRequest).filter(ChargeRequest.id == record.id).update({
@@ -254,7 +266,7 @@ class user_charge(Resource):
             return {
                 "amount": data['amount'],
                 "chargingArea": c_area,
-                "code": 200,
+                "code": 0,
                 "fast": data['fast'],
                 "pile": pile,
                 "position": position,
@@ -264,15 +276,41 @@ class user_charge(Resource):
             }
         else:
             return {
-                "code": 400,
+                "code": -1,
                 "message": error_msg
             }
     @jwt_required()
-    def delete(self,request = None, _user = None):
-        if _user is None:
-            user=User.find_by_username(get_jwt_identity())
+    def delete(self):
+        user = User.find_by_username(get_jwt_identity())
+        request = db.session.query(ChargeRequest).filter(
+            ChargeRequest.user_id == user.id).order_by(ChargeRequest.id.desc()).first()
+        if request is None:
+            success = False
+            error_msg = "该用户没有充电请求"
         else:
-            user = _user
+            if request.state == 1:
+                success = True
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+                db.session.query(WaitArea).filter(WaitArea.request_id == request.id).delete()
+                db.session.query(WaitQueue).filter(WaitQueue.charge_id == request.charge_id).delete()
+                db.session.commit()
+            else:
+                success = False
+                error_msg='车辆不在等待区，取消失败'
+        if success:
+            return {
+                "code": 0,
+                "message": "取消成功"
+            }
+        else:
+            return {
+                "code": -1,
+                "message": error_msg
+            }
+class finish_charge(Resource):
+    @jwt_required()
+    def post(self):
+        user = User.find_by_username(get_jwt_identity())
         # TODO(2): 处理，取消充电请求
         # question：用户的最后一个请求一定是最新的要取消的请求吗？
         request = db.session.query(ChargeRequest).filter(
@@ -295,7 +333,7 @@ class user_charge(Resource):
                 charge_record = ChargeRecord(id=record_id, order_id=order_id, create_time=create_time,
                                              charged_amount='%.2f' % 0, charged_time='%.2f' % 0, begin_time='%.2f' % 0,
                                              end_time='%.2f' % 0, charging_cost='%.2f' % 0, service_cost='%.2f' % 0,
-                                             total_cost='%.2f' % 0, pile_id=request.charge_pile_id, user_id=user.id
+                                             total_cost='%.2f' % 0, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
                                              )
                 charge_record.save_to_db()
             # 如果当前正在充电，计算后再创建充电详单 question：算法尚未测试
@@ -375,7 +413,7 @@ class user_charge(Resource):
                                              end_time=end_time.strftime(
                                                  "%Y-%m-%d %H:%M:%S"),
                                              charging_cost=charging_cost, service_cost=service_cost,
-                                             total_cost=total_cost, pile_id=request.charge_pile_id, user_id=user.id
+                                             total_cost=total_cost, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
                                              )
                 charge_record.save_to_db()
                 # 更新充电桩信息
@@ -408,45 +446,71 @@ class user_charge(Resource):
                 ChargeArea.request_id == request.id).delete()
             db.session.query(ChargeWaitArea).filter(
                 ChargeWaitArea.request_id == request.id).delete()
-
             db.session.commit()
-        if _user is None:
-            if success:
-                return {
-                    "code": 200,
-                    "message": "取消成功"
-                }
-            else:
-                return {
-                    "code": 400,
-                    "message": error_msg
-                }
-class finish_charge(Resource):
-    @jwt_required()
-    def post(self):
-        user = User.find_by_username(get_jwt_identity())
-        request = db.session.query(ChargeRequest).filter(
-            ChargeRequest.user_id == user.id).order_by(ChargeRequest.id.desc()).first()
-        if request.state==3:
+        if success:
+            record = db.session.query(ChargeRecord).filter(
+                ChargeRecord.user_id == user.id).order_by(ChargeRecord.id.desc()).first()
             return {
-                "chargeAmount": 0,
-                "chargeEndTime": "string",
-                "chargeFee": 0,
-                "chargeStartTime": "string",
-                "created_at": "string",
-                "deleted_at": "string",
-                "id": 0,
-                "pileId": 0,
-                "serviceFee": 0,
-                "totalFee": 0,
-                "updated_at": "string",
-                "userId": 0
+                "chargeAmount": record.charged_amount,
+                "chargeEndTime": record.end_time,
+                "chargeFee": record.charging_cost,
+                "chargeStartTime": record.begin_time,
+                "created_at": record.create_time,
+                "deleted_at": 'null',
+                "id": record.order_id,
+                "pileId": record.pile_id,
+                "serviceFee": record.service_cost,
+                "totalFee": record.total_cost,
+                "updated_at": record.create_time,
+                "userId": record.user_id
             }
         else:
             return {
-                "code": 400,
-                "message": "该用户未在充电"
+                "code": -1,
+                "message": error_msg
             }
+class get_single_bill(Resource):
+    @jwt_required()
+    def get(self,billId):
+        record=db.session.query(ChargeRecord).filter(ChargeRecord.id==billId).first()
+        if record is None:
+            return {
+                "code": -1,
+                "message": "未找到充电订单"
+            }
+        else:
+            return {
+                "chargeAmount": record.charged_amount,
+                "chargeEndTime": record.end_time,
+                "chargeFee": record.charging_cost,
+                "chargeStartTime": record.begin_time,
+                "created_at": record.create_time,
+                "deleted_at": 'null',
+                "id": record.order_id,
+                "pileId": record.pile_id,
+                "serviceFee": record.service_cost,
+                "totalFee": record.total_cost,
+                "updated_at": record.create_time,
+                "userId": record.user_id
+            }
+class get_bills(Resource):
+    @jwt_required()
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('limit', type=int, help='每页数量', default=-1, required=False,location='args')
+        parser.add_argument('skip', type=int, help='偏移量', default=0, required=False,location='args')
+        data = parser.parse_args()
+        limit=data['limit']
+        skip=data['skip']
+        record_list = db.session.query(ChargeRecord).all()
+        if len(record_list) == 0:
+            return {
+                "code": -1,
+                "message": "未找到充电订单"
+            }
+        else:
+            if limit==-1:
+                return marshal(record_list[skip:],charge_record_fields)
 
 class sys_time(Resource):
     def get(self):
@@ -454,11 +518,10 @@ class sys_time(Resource):
         return {
             "time": timer.get_cur_format_time()
         }
-
 class sys_ping(Resource):
     def get(self):
         return {
-            "code": 200,
+            "code": 0,
             "message": "success"
         }
 

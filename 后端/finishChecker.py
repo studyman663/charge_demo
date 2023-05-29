@@ -42,7 +42,7 @@ def end_charging_request(user, end_time):
             charge_record = ChargeRecord(id=record_id, order_id=order_id, create_time=create_time,
                                          charged_amount='%.2f' % 0, charged_time='%.2f' % 0, begin_time='%.2f' % 0,
                                          end_time='%.2f' % 0, charging_cost='%.2f' % 0, service_cost='%.2f' % 0,
-                                         total_cost='%.2f' % 0, pile_id=request.charge_pile_id, user_id=user.id
+                                         total_cost='%.2f' % 0, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
                                          )
             db.session.add(charge_record)
             db.session.commit()
@@ -121,7 +121,7 @@ def end_charging_request(user, end_time):
                                          end_time=end_time.strftime(
                                              "%Y-%m-%d %H:%M:%S"),
                                          charging_cost=charging_cost, service_cost=service_cost,
-                                         total_cost=total_cost, pile_id=request.charge_pile_id, user_id=user.id
+                                         total_cost=total_cost, pile_id=request.charge_pile_id, user_id=user.id,update_time=create_time
                                          )
             db.session.add(charge_record)
             db.session.commit()
