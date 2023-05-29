@@ -52,6 +52,8 @@ class Charger(db.Model): #充电桩信息
     cumulative_charging_time = db.Column(db.Integer, default=0)  # 充电桩累计充电时间
     cumulative_charging_amount = db.Column(db.String(20), default="0")  # 充电桩累计充电电量
     start_time = db.Column(db.BIGINT, default=0)  # 充电桩的启动时间
+    delete_time=db.Column(db.BIGINT, default=0)
+    update_time=db.Column(db.BIGINT, default=0)
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
@@ -84,7 +86,7 @@ class WaitArea(db.Model):
 
 class ChargeRecord(db.Model):
     __tablename__ = 'charge_record'
-    id = db.Column(db.String(20), primary_key=True)  # 编号
+    id = db.Column(db.Integer, primary_key=True)  # 编号
     order_id = db.Column(db.String(20))  # 订单号
     created_at = db.Column(db.String(20))  # 详单生成时间
     chargeAmount = db.Column(db.Float)  # 充电电量
@@ -96,8 +98,8 @@ class ChargeRecord(db.Model):
     chargeFee = db.Column(db.Float)  # 充电费用
     serviceFee = db.Column(db.Float)  # 服务费用
     totalFee = db.Column(db.Float)  # 总费用
-    pileId = db.Column(db.String(20))  # 充电桩号
-    userId = db.Column(db.String(20))  # 用户id
+    pileId = db.Column(db.Integer)  # 充电桩号
+    userId = db.Column(db.Integer)  # 用户id
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()

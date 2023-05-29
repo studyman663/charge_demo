@@ -19,12 +19,12 @@ charge_record_fields = {
         "chargeStartTime": fields.String,
         "created_at": fields.String,
         "deleted_at": fields.String,
-        "id": fields.String,
-        "pileId": fields.String,
+        "id": fields.Integer,
+        "pileId": fields.Integer,
         "serviceFee": fields.Float,
         "totalFee": fields.Float,
         "updated_at": fields.String,
-        "userId": fields.String
+        "userId": fields.Integer
     }
 def username_validate(value, name):
     if len(value) < 6 or len(value) > 20:
@@ -91,14 +91,11 @@ class user_login(Resource):
             refresh_token = create_refresh_token(identity=data['username'])
             return {
                 "code": 0,
-                # 'message': f'Logged in as {current_user.username}',
                 "expire": expire_time_utc.isoformat(),
                 "token": access_token
             }
         else:
             return {'message': 'Wrong credentials'}
-
-
 
 class user_charge(Resource):
     @jwt_required()
@@ -110,15 +107,25 @@ class user_charge(Resource):
             fast = True if request.charge_mode == 'F' else False
             w_area = True if int(request.state) == 1 else False
             c_area = True if int(request.state)== 3 or int(request.state) == 2 else False
+            if w_area:
+                position=int(request.charge_id[1:])
+            if c_area:
+                if request.state==3:
+                    position=0
+                else:
+                    front_num = db.session.query(ChargeArea.request_id).filter(and_(ChargeArea.pile_id == request.charge_pile_id,ChargeArea.request_id<request.id)).count()
+                    position=front_num+1
+            if request.state==0:
+                position=-1
             return {
-                "amount": request.require_amount,
+                "amount": int(request.require_amount),
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": fast,
-                "pile": request.charge_pile_id,
-                "position": request.charge_id,
+                "pile": int(request.charge_pile_id),
+                "position": position,
                 "status": status[request.state],
-                "totalAmount": request.battery_size,
+                "totalAmount": int(request.battery_size),
                 "waitingArea": w_area
             }
         else:
@@ -179,8 +186,15 @@ class user_charge(Resource):
                 state = int(db.session.query(ChargeRequest.state).filter(ChargeRequest.id == charge_request.id).scalar())
                 w_area=True if state==1 else False
                 c_area=True if state==3 or state==2 else False
-                position=db.session.query(ChargeRequest.charge_id).filter(ChargeRequest.id == charge_request.id).scalar()
-                pile=db.session.query(ChargeRequest.charge_pile_id).filter(ChargeRequest.id == charge_request.id).scalar()
+                if w_area:
+                    position = int(charge_request.charge_id[1:])
+                if c_area:
+                    if charge_request.state == 3:
+                        position = 0
+                    else:
+                        position = db.session.query(ChargeArea.request_id).filter(
+                            and_(ChargeArea.pile_id == charge_request.charge_pile_id,
+                                 ChargeArea.request_id < charge_request.id)).count()
             else:
                 success = False
                 error_msg = "请求失败，等候区已满。"
@@ -195,7 +209,7 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": data['fast'],
-                "pile": pile,
+                "pile": int(charge_request.charge_pile_id),
                 "position": position,
                 "status": status[state],
                 "totalAmount": data['totalAmount'],
@@ -255,8 +269,6 @@ class user_charge(Resource):
             state = int(db.session.query(ChargeRequest.state).filter(ChargeRequest.id == record.id).scalar())
             w_area = True if state == 1 else False
             c_area = True if state == 3 or state == 2 else False
-            position = db.session.query(ChargeRequest.charge_id).filter(ChargeRequest.id == record.id).scalar()
-            pile = db.session.query(ChargeRequest.charge_pile_id).filter(ChargeRequest.id == record.id).scalar()
             success = True
             error_msg = None
         else:
@@ -268,8 +280,8 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": data['fast'],
-                "pile": pile,
-                "position": position,
+                "pile": int(record.charge_pile_id),
+                "position": int(record.charge_id[1:]),
                 "status": status[state],
                 "totalAmount": data['totalAmount'],
                 "waitingArea": w_area

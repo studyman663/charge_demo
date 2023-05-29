@@ -57,22 +57,6 @@ api.add_resource(sys_time, '/time')
 api.add_resource(sys_ping, '/ping')
 
 
-# @app.before_first_request
-# def before_first_request():
-#     with app.app_context():
-#         thread = threading.Thread(target=check_finish)
-#         thread.start()
-# @app.route("/charge/bills", methods=['GET'])
-# def get():
-#     parser = reqparse.RequestParser()
-#     parser.add_argument('limit', type=int, help='每页数量', default=-1, required=False)
-#     parser.add_argument('skip', type=int, help='偏移量', default=0, required=False)
-#     if request.method == 'GET' and request.content_type == 'application/json':
-#         request.get_json(force=True, silent=True)
-#     args = parser.parse_args()
-#     limit = args.limit
-#     skip = args.skip
-#     return 'OK'
 @app.route('/')
 def index():
     return jsonify({'message': 'Hello, World!'})
