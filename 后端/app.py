@@ -17,7 +17,7 @@ def init_pile():
         for t in types:
             Charger(type=t).save_to_db()
     if not db.session.query(User).filter(User.username=='admin_bupt_10').first():
-        User(username='admin_bupt_10',password='admin_bupt_10',admin=True).save_to_db()
+        User(username='admin_bupt_10',password=User.generate_hash('admin_bupt_10'),admin=True).save_to_db()
 def run_check():
     with app.app_context():
         check_finish()
