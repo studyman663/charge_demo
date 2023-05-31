@@ -1,11 +1,10 @@
 import datetime,pytz
 from decimal import Decimal
 
-from flask import request
-from flask_restful import Resource, reqparse, fields, marshal_with, marshal
+from flask import jsonify
+from flask_restful import Resource, reqparse, fields, marshal
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt)
-from sqlalchemy import and_
-
+from sqlalchemy import and_, func
 from Timer import Timer
 from app import db
 from config import *
@@ -209,7 +208,7 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": data['fast'],
-                "pile": int(charge_request.charge_pile_id),
+                "pile": -1 if charge_request.charge_pile_id is None else int(charge_request.charge_pile_id),
                 "position": position,
                 "status": status[state],
                 "totalAmount": data['totalAmount'],
@@ -353,7 +352,6 @@ class finish_charge(Resource):
                 begin_time = datetime.datetime.fromtimestamp(request.start_time)
                 end_time = now
                 charged_time = (end_time - begin_time).seconds  # 充电时长
-
                 if request.charge_mode == "F":
                     rate = 30
                 else:
@@ -462,7 +460,8 @@ class finish_charge(Resource):
         if success:
             record = db.session.query(ChargeRecord).filter(
                 ChargeRecord.userId == user.id).order_by(ChargeRecord.id.desc()).first()
-            return marshal(record,charge_record_fields)
+            # return marshal(record,charge_record_fields)
+            return jsonify(record)
         else:
             return {
                 "code": -1,
@@ -500,6 +499,217 @@ class get_bills(Resource):
             else:
                 return marshal(record_list[skip:skip+limit], charge_record_fields)
 
+class manage_pile(Resource):
+    @jwt_required()
+    def get(self,pileId):
+        admin = User.find_by_username(get_jwt_identity()).admin
+        if admin == 0:
+            return {
+                "code": 4,
+                "message": "permission denied"
+            }
+        else:
+            if db.session.query(Charger).filter(Charger.id == pileId).first():
+                chargeAmount = db.session.query(Charger.cumulative_charging_amount).filter(Charger.id == pileId).scalar()
+                chargeTime = db.session.query(Charger.cumulative_charging_time).filter(Charger.id == pileId).scalar()/60
+                chargeTimes = db.session.query(Charger.cumulative_usage_times).filter(Charger.id == pileId).scalar()
+                status = db.session.query(Charger.charger_status).filter(Charger.id == pileId).scalar()
+                return {
+                    "chargeAmount": chargeAmount,
+                    "chargeTime": '{:.2f}'.format(chargeTime),
+                    "chargeTimes": chargeTimes,
+                    "id": pileId,
+                    "status": Charger_status.index(status) - 1
+                }
+            else:
+                return {
+                    "code": 5,
+                    "message": "Pile don't exist"
+                }
+    @jwt_required()
+    def put(self,pileId):
+        admin = User.find_by_username(get_jwt_identity()).admin
+        if admin == 0:
+            return {
+                "code": 4,
+                "message": "permission denied"
+            }
+        else:
+            if db.session.query(Charger).filter(Charger.id == pileId).first():
+                parser = reqparse.RequestParser()
+                parser.add_argument('status', type=int, help='充电桩状态')
+                data = parser.parse_args()
+                status = data['status']
+                status_before = db.session.query(Charger.charger_status).filter(Charger.id == pileId).scalar()
+                if status_before and status != status_before:
+                    timer = Timer()
+                    if status == 1:
+                        db.session.query(Charger).filter(Charger.id == pileId).update({
+                            "charger_status": Charger_status[status+1]
+                        })
+                        schedule(3, None, Charger.type)
+                    elif status == 0 or status == -1:
+                        db.session.query(Charger).filter(Charger.id == pileId).update({
+                            "charger_status": Charger_status[status+1]
+                        })
+                        schedule(4, None, err_charger_id=pileId)
+                    db.session.query(Charger).filter(Charger.id == pileId).update({
+                        "update_time": timer.get_cur_timestamp()
+                    })
+                    db.session.commit()
+                create_at = db.session.query(Charger.start_time).filter(Charger.id == pileId).scalar()
+                fast = True if db.session.query(Charger.type).filter(Charger.id == pileId).scalar() == 'F' else False
+                updated_at = db.session.query(Charger.update_time).filter(Charger.id == pileId).scalar()
+                delete_at = db.session.query(Charger.delete_time).filter(Charger.id == pileId).scalar()
+                status = db.session.query(Charger.charger_status).filter(Charger.id == pileId).scalar()
+                return {
+                    "id": pileId,
+                    "deleted_at": datetime.datetime.fromtimestamp(delete_at).strftime('%Y-%m-%d %H:%M:%S'),
+                    "created_at": datetime.datetime.fromtimestamp(create_at).strftime('%Y-%m-%d %H:%M:%S'),
+                    "status": Charger_status.index(status) - 1,
+                    "fast": fast,
+                    "updated_at": datetime.datetime.fromtimestamp(updated_at).strftime('%Y-%m-%d %H:%M:%S')
+                }
+            else:
+                return {
+                    "code": 5,
+                    "message": "Pile don't exist"
+                }
+class get_pile_wait(Resource):
+    @jwt_required()
+    def get(self,pileId):
+        admin = User.find_by_username(get_jwt_identity()).admin
+        if admin == 0:
+            return {
+                "code": 4,
+                "message": "permission denied"
+            }
+        else:
+            timer = Timer()
+            if db.session.query(Charger).filter(Charger.id == pileId).first():
+                users = db.session.query(ChargeRequest).filter(and_(ChargeRequest.charge_pile_id == pileId,ChargeRequest.state!=0)).all()
+                returnlist = []
+                if users:
+                    for user in users:
+                        waiting_time = (timer.get_cur_timestamp() - user.request_submit_time)/60
+                        returnlist.append({
+                            "id": user.user_id,
+                            "status": status[user.state],
+                            "battery_size": '{:.2f}'.format(user.battery_size),
+                            "amount": '{:.2f}'.format(user.require_amount),
+                            "waitTime": '{:.2f}'.format(waiting_time)
+                        })
+                if returnlist:
+                    return {
+                        "id": pileId,
+                        "users": returnlist
+                    }
+                else:
+                    return {
+                        "id": pileId,
+                        "users": "no users waiting"
+                    }
+            else:
+                return{
+                    "code": 5,
+                    "message": "Piles don't exist"
+                }
+class get_piles(Resource):
+    @jwt_required()
+    def get(self):
+        admin = User.find_by_username(get_jwt_identity()).admin
+        if admin == 0:
+            return {
+                "code": 0,
+                "message": "permission denied"
+            }
+        else:
+            parser = reqparse.RequestParser()
+            parser.add_argument('limit', type=int, help='请求数量', default=-1, required=False, location='args')
+            parser.add_argument('skip', type=int, help='偏移量', default=0, required=False, location='args')
+            data = parser.parse_args()
+            limit = data['limit']
+            skip = data['skip'] if data['skip'] < Charger_num else Charger_num - 1
+            pile_list = db.session.query(Charger).all()
+            returnlist = []
+            if limit == -1:
+                for pile in pile_list[skip:]:
+                    returnlist.append({
+                        "created_at": datetime.datetime.fromtimestamp(pile.start_time),
+                        "deleted_at": datetime.datetime.fromtimestamp(pile.delete_time),
+                        "fast": True if pile.type == 'F' else False,
+                        "id": pile.id,
+                        "status": Charger_status.index(pile.charger_status) - 1,
+                        "updated_at": datetime.datetime.fromtimestamp(pile.update_time)
+                    })
+            else:
+                ends = skip + limit
+                end = ends + 1 if ends < Charger_num else Charger_num
+                for pile in pile_list[skip:end]:
+                    returnlist.append({
+                        "created_at": datetime.datetime.fromtimestamp(pile.start_time),
+                        "deleted_at": datetime.datetime.fromtimestamp(pile.delete_time),
+                        "fast": True if pile.type == 'F' else False,
+                        "id": pile.id,
+                        "status": Charger_status.index(pile.charger_status) - 1,
+                        "updated_at": datetime.datetime.fromtimestamp(pile.update_time)
+                    })
+            if returnlist:
+                return jsonify(returnlist)
+            else:
+                return {
+                    "code": 5,
+                    "message": "Piles don't exist"
+                }
+class get_report(Resource):
+    @jwt_required()
+    def get(self):
+        admin = User.find_by_username(get_jwt_identity()).admin
+        if admin == 0:
+            return {
+                "code": 0,
+                "message": "permission denied"
+            }
+        else:
+            parser = reqparse.RequestParser()
+            parser.add_argument('date', type=str, help='日期', default="2023-05-31", required=False, location='args')
+            data = parser.parse_args()
+            querydate = data['date']
+            returnlist = []
+            pilequeue = db.session.query(ChargeRecord.pileId).filter(
+                ChargeRecord.chargeEndTime.like(f"%{querydate}%")).distinct().all()
+            pilequeue = [int(pile[0]) for pile in pilequeue]
+            for pile_id in pilequeue:
+                chargeTimes = db.session.query(ChargeRecord).filter(and_(ChargeRecord.pileId == pile_id,
+                                                                         ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).count()
+                chargeAmount = db.session.query(func.sum(ChargeRecord.chargeAmount)).filter(and_(ChargeRecord.pileId == pile_id,
+                                                                                           ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()
+                chargeTime = db.session.query(func.sum(ChargeRecord.charged_time)).filter(and_(ChargeRecord.pileId == pile_id,
+                                                                                         ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()/60
+                chargeFee = db.session.query(func.sum(ChargeRecord.chargeFee)).filter(and_(ChargeRecord.pileId == pile_id,
+                                                                                     ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()
+                serviceFee = db.session.query(func.sum(ChargeRecord.serviceFee)).filter(and_(ChargeRecord.pileId == pile_id,
+                                                                                       ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()
+                totalFee = db.session.query(func.sum(ChargeRecord.totalFee)).filter(and_(ChargeRecord.pileId == pile_id,
+                                                                                   ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()
+
+                returnlist.append({
+                    "id": pile_id,
+                    "chargeTimes": chargeTimes,
+                    "chargeAmount": chargeAmount,
+                    "chargeTime": '{:.2f}'.format(chargeTime),
+                    "chargeFee": '{:.2f}'.format(chargeFee),
+                    "serviceFee": '{:.2f}'.format(serviceFee),
+                    "totalFee": '{:.2f}'.format(totalFee)
+                })
+                # print(returnlist)
+            if returnlist:
+                return jsonify(returnlist)
+            else:
+                return {
+                    "code": 4,
+                    "message": "reports don't exist"
+                }
 class sys_time(Resource):
     def get(self):
         timer = Timer()

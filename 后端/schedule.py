@@ -1,13 +1,7 @@
 from sqlalchemy import and_
-
-from app import db
 from models import ChargeRequest, ChargeArea, ChargeWaitArea, WaitArea, ChargeRecord, Charger, WaitQueue
 from Timer import Timer
 from exts import db
-# from chargingInBupt.orm import WaitArea, WaitQueue
-# from chargingInBupt.orm import ChargeRecord, ChargeRequest, Charger, ChargeArea, ChargeWaitArea, WaitArea
-# from chargingInBupt.orm import session
-# from chargingInBupt.Timer import Timer
 from config import charge_max_num
 
 def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch=False, error=False):

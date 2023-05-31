@@ -1,10 +1,6 @@
-from sqlalchemy.orm import sessionmaker
-
-
 from passlib.hash import pbkdf2_sha256 as sha256
 from config import *
 from app import db
-
 
 class User(db.Model):
     __tablename__ = 'users'
