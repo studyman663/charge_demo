@@ -121,7 +121,7 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": fast,
-                "pile": int(request.charge_pile_id),
+                "pile": -1 if request.charge_pile_id is None else int(request.charge_pile_id),
                 "position": position,
                 "status": status[request.state],
                 "totalAmount": int(request.battery_size),
@@ -279,7 +279,7 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": data['fast'],
-                "pile": int(record.charge_pile_id),
+                "pile": -1 if record.charge_pile_id is None else int(record.charge_pile_id),
                 "position": int(record.charge_id[1:]),
                 "status": status[state],
                 "totalAmount": data['totalAmount'],
@@ -460,8 +460,7 @@ class finish_charge(Resource):
         if success:
             record = db.session.query(ChargeRecord).filter(
                 ChargeRecord.userId == user.id).order_by(ChargeRecord.id.desc()).first()
-            # return marshal(record,charge_record_fields)
-            return jsonify(record)
+            return marshal(record,charge_record_fields)
         else:
             return {
                 "code": -1,
@@ -692,7 +691,6 @@ class get_report(Resource):
                                                                                        ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()
                 totalFee = db.session.query(func.sum(ChargeRecord.totalFee)).filter(and_(ChargeRecord.pileId == pile_id,
                                                                                    ChargeRecord.chargeEndTime.like(f"%{querydate}%"))).scalar()
-
                 returnlist.append({
                     "id": pile_id,
                     "chargeTimes": chargeTimes,
