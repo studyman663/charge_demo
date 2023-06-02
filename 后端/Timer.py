@@ -12,8 +12,6 @@ def singleton(cls):
 class Timer(object):
     start_time = 0
     speed = 10
-    shift = 3600 * 13
-
     def __init__(self):
         self.start_time = datetime.datetime.now()
 

@@ -3,10 +3,8 @@ from app import db
 from models import ChargeRequest, ChargeRecord, Charger, WaitArea, WaitQueue, ChargeArea, ChargeWaitArea, User
 from Timer import Timer
 from schedule import schedule
-
 def check_finish():
     timer = Timer()
-    print(timer.get_cur_format_time())
     to_check = db.session.query(ChargeRequest).filter(ChargeRequest.state == 3).all()
     for charge_request in to_check:
         if charge_request.start_time + charge_request.charge_time <= timer.get_cur_timestamp():

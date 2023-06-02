@@ -12,5 +12,5 @@ wait_max_num=6
 charge_max_num=3
 fast_power=30
 slow_power=10
-status=['充电完成','等候区排队中','充电区等待中','正在充电']
+status=['充电完成','等候区排队中','充电区等待中','充电中']
 Charger_status = ['UNAVAILABLE','SHUTDOWN','RUNNING']
