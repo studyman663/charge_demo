@@ -1,0 +1,216 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th,
+  td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  th {
+    background-color: rgba(24, 144, 255, 1);
+    color: white;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th,
+  td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  th {
+    background-color: rgba(24, 144, 255, 1);
+    color: white;
+  }
+  
+  #u173 {
+    position: relative;
+  }
+  
+  .pagination-container {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 10px;
+  }
+  
+  #pile_table {
+    position: relative;
+    z-index: 1;
+  }
+  /* .time-picker {
+  display: flex;
+  align-items: center;
+}
+
+.time-picker input {
+  margin-right: 10px;
+} */
+#infoBox {
+    position: fixed;
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%, -50%);
+    width: 20%;
+    max-width: 600px;
+    background-color: #f8f8f8;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    font-size: 16px; /* 调整字体大小为 16px */
+    z-index: 9999; /* 设置较大的 z-index 值 */
+  }
+  
+  
+  #closeText {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 12px;
+    color: #999;
+  }
+  .infoRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 信息名称和内容之间留有空间 */
+    margin-bottom: 10px;
+  }
+  
+  .infoName {
+    font-weight: bold;
+    margin-right: 10px;
+    text-align: left; /* 信息名称靠左对齐 */
+  }
+  
+  .infoValue {
+    color: #555;
+    text-align: right; /* 信息内容靠右对齐 */
+  }
+
+
+
+
+  /* search */
+
+  #u88 {
+    position: relative;
+  }
+  
+  .search-container {
+    position: relative;
+    top: 70px; /* 调整搜索框相对于容器的位置 */
+  }
+  
+  
+  .search-box {
+    font-family: FontAwesome;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    height: 40px;
+    border-radius: 40px;
+    padding: 10px;
+    opacity: 0;
+    transition-delay: 99999999s;
+    transition-duration: 1s;
+  }
+  
+  .search-box:hover > .search-txt {
+    width: 240px;
+    padding: 0 6px;
+  }
+  
+  .search-box:hover > .search-btn {
+    color: white;
+    background: black;
+  }
+  
+  .search-btn {
+    transition: 0.5s;
+    font-family: FontAwesome;
+    font-size: 25px;
+    color: black;
+    float: right;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+  }
+  
+  .search-txt {
+    border: none;
+    background: none;
+    outline: none;
+    float: left;
+    padding: 0;
+    color: rgb(51, 159, 150);
+    font-size: 16px;
+    font-weight: bold; /* 字体加粗 */
+    transition: 0.6s;
+    line-height: 50px;
+    width: 0px;
+  }
+  
+  @keyframes flash {
+    50% {
+      transform: scale(1.5);
+    }
+    80% {
+      transform: rotate(-60deg);
+    }
+    100% {
+      transform: rotate(30deg);
+    }
+  }
+  
+  html:hover .search-box {
+    opacity: 1;
+    transition-delay: 0s;
+    transition-duration: 0s;
+  }
+  
+
+
+
+.time-picker input {
+  padding: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid #ccc;
+  border-radius: 50px;
+  background-color: #f5f5f5;
+  text-align: right; /* 调整文本对齐方式为右对齐 */
+  width: 234px;
+  font-family: "Courier New", monospace;
+}
+
+
+.time-picker input::before {
+  content: ":";
+  position: relative;
+  left: -8px;
+}
