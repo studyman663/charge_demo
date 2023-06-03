@@ -46,7 +46,7 @@ api.add_resource(user_login, '/user/login')
 api.add_resource(token_refresh, '/token/refresh')
 api.add_resource(user_charge, '/charge')          #充电请求的增删改查
 api.add_resource(finish_charge, '/charge/finish') #主动结束充电
-api.add_resource(get_single_bill,'/charge/bill/<int:billId>')
+api.add_resource(get_single_bill,'/charge/bill/<billId>')
 api.add_resource(get_bills,'/charge/bills')
 api.add_resource(manage_pile,'/pile/<int:pileId>')
 api.add_resource(get_pile_wait,'/pile/<int:pileId>/wait')
