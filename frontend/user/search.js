@@ -5,7 +5,7 @@ oBtn.onclick = function () {
   Search();
 };
 
-document.onkeydown = function () {
+document.onkeydown = function (event) {
   if (event.keyCode == 13) {
     Search();
   }
@@ -18,9 +18,9 @@ function Search() {
   xhr.withCredentials = true;
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
-      if (this.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      // if (data.code === 200) {
         console.log(this.responseText);
-        var data = JSON.parse(xhr.responseText);
 
         var infoBox = document.getElementById("infoBox");
         infoBox.style.display = "block";
@@ -29,10 +29,10 @@ function Search() {
         idd.textContent = data.id;
 
         var idd = document.getElementById("m2");
-        idd.textContent = data.createdAt;
+        idd.textContent = data.created_at;
 
         var idd = document.getElementById("m3");
-        idd.textContent = data.updatedAt;
+        idd.textContent = data.updated_at;
 
         var idd = document.getElementById("m4");
         idd.textContent = data.chargeAmount;
@@ -57,14 +57,18 @@ function Search() {
 
         var idd = document.getElementById("m11");
         idd.textContent = data.pileId;
-      }
-      else{
-        alert("订单不存在");
-      }
+      // }
+      // else{
+      //   alert("订单不存在");
+      // }
     }
   });
 
-  xhr.open("GET", config.apiBaseUrl + "/charge/bill/");
+  var searchID = document.getElementById("inp").value;
+  console.log(searchID);
+
+  xhr.open("GET", config.apiBaseUrl + "/charge/bill/" + searchID);
+  console.log(config.apiBaseUrl + "/charge/bill/" + searchID);
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
