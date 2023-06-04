@@ -57,6 +57,8 @@ var fastelement = document.getElementById("u196");
 
 setInterval(myFunction, 1000); // 每秒执行一次 myFunction 函数
 
+window.addEventListener("load", myFunction);
+
 function myFunction() {
   // WARNING: For GET requests, body is set to null by browsers.
 
@@ -88,6 +90,34 @@ function myFunction() {
         }
         chargingAreaelement.textContent =
           data.chargingArea === true ? "是" : "否";
+
+        if (data.status === "等候区排队中"){
+          var modify = document.getElementById("u199");
+          modify.style.display = "block";
+          var cancel = document.getElementById("u200");
+          cancel.style.display = "block";
+          var finish = document.getElementById("u201");
+          finish.style.display = "none";
+        }
+        else if (data.status === "充电完成"){
+          var modify = document.getElementById("u199");
+          modify.style.display = "none";
+          var cancel = document.getElementById("u200");
+          cancel.style.display = "none";
+          var finish = document.getElementById("u201");
+          finish.style.display = "block";
+          finish.textContent = "    拔出充电桩".replace(/ /g, "\u00A0");
+          finish.style.backgroundColor =  "rgb(68, 193, 193)";
+          console.log("拔出");
+        }
+        else {
+          var modify = document.getElementById("u199");
+          modify.style.display = "block";
+          var cancel = document.getElementById("u200");
+          cancel.style.display = "none";
+          var finish = document.getElementById("u201");
+          finish.style.display = "block";
+        }
         // if (waitingArea === "true"){
         //   alert("");
         //   waitingAreaelement.textContent = "是";}
@@ -102,14 +132,15 @@ function myFunction() {
         // else{
         //   fastelement.textContent = "  慢充";}
       }
+      else {
+        var notFound = document.getElementById("u215");
+        notFound.style.display = "block";
+      }
       // else if (this.status === 404){
       //   var notFounud = document.getElementById("u215");
       //   notFounud.style.display = 'block';
       // }
-    } else {
-      var notFound = document.getElementById("u215");
-      notFound.style.display = "block";
-    }
+    } 
   });
 
   xhr.open("GET", config.apiBaseUrl + "/charge");
@@ -166,7 +197,7 @@ confirmModify.addEventListener("click", function () {
   var xhr = new XMLHttpRequest();
   xhr.withCredentials = true;
 
-  xhr.open("POST", config.apiBaseUrl + "/charge");
+  xhr.open("PUT", config.apiBaseUrl + "/charge");
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -178,18 +209,13 @@ confirmModify.addEventListener("click", function () {
     fast: fast,
   });
 
-  //头部加上token
-  var token = sessionStorage.getItem("token");
-  xhr.setRequestHeader("Authorization", "Bearer " + token);
-
   xhr.send(data);
 
   xhr.addEventListener("readystatechange", function () {
     if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
         console.log("申请成功");
 
-        var data = JSON.parse(xhr.responseText);
         var pile = data.pile;
         var amount = data.amount;
         var status = data.status;
@@ -207,10 +233,6 @@ confirmModify.addEventListener("click", function () {
         sessionStorage.setItem("waitingArea", waitingArea);
         sessionStorage.setItem("fast", fast);
         window.location.href = "checkcurrentbill.html";
-      } else {
-        alert("error: sumbit failed");
-        return;
-      }
     } else {
       return;
     }
@@ -276,6 +298,8 @@ Finish.addEventListener("click", function () {
   frame.style.display = "block";
 });
 
+var clickcount = 0;
+
 var confirmFinish = document.getElementById("u158");
 confirmFinish.addEventListener("click", function () {
   var frame = document.getElementById("u152");
@@ -286,12 +310,18 @@ confirmFinish.addEventListener("click", function () {
 
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
-      console.log(this.responseText);
-      window.location.href("chargeselect.html");
+      var data = JSON.parse(xhr.responseText);
+        console.log(data);
+        
+        clickcount ++;
+        if(clickcount >= 2){
+          window.location.href = "chargeselect.html";
+          // clickcount = 0;
+        }
     }
   });
 
-  xhr.open("DELETE", config.apiBaseUrl + "/charge");
+  xhr.open("POST", config.apiBaseUrl + "/charge/finish");
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);

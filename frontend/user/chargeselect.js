@@ -55,7 +55,10 @@ submitButton.addEventListener("click", function () {
   xhr.addEventListener("readystatechange", function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
-        console.log("申请成功");
+        
+        sessionStorage.setItem("jump","0");
+        var jump = sessionStorage.getItem("jump");
+        console.log(jump);
 
         var data = JSON.parse(xhr.responseText);
         var pile = data.pile;

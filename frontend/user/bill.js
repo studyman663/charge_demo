@@ -6,8 +6,9 @@ window.addEventListener("load", function () {
     if (this.readyState === 4) {
       var data = JSON.parse(this.responseText);
     
-        if (data.code === 0) {
-          console.log(this.responseText);
+        // if (data.code === 0) {
+          console.log("111");
+          console.log(data);
           var tableBody = document.getElementById("table-body");
           var itemsPerPage = 10;
           var currentPage = 1;
@@ -118,7 +119,11 @@ window.addEventListener("load", function () {
 
           prevButton.addEventListener("click", handlePrevPage);
           nextButton.addEventListener("click", handleNextPage);
-        }
+        // }
+        // else{
+        //   var code =data.code;
+        //   console.log(code);        
+        // }
     }
   });
 

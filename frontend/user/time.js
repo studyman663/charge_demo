@@ -27,4 +27,4 @@ function updateTimestamp() {
 }
 
 // 每0.1秒更新一次时间戳
-setInterval(updateTimestamp, 1000);
+setInterval(updateTimestamp, 100000);
