@@ -35,7 +35,7 @@ window.addEventListener("DOMContentLoaded", function() {
         if (this.status === 201) {
          alert("register successfully!");
           // 跳转到主界面
-          window.location.href = "login.html";
+          window.location.href = "index.html";
         } else {
       alert("error: register failed");
         }
