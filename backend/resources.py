@@ -451,7 +451,7 @@ class finish_charge(Resource):
                     ChargeWaitArea.request_id == request.id).delete()
                 db.session.commit()
             else:
-                db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+                db.session.query(ChargeRequest).filter(ChargeRequest.user_id == user.id).delete()
                 db.session.commit()
             success = True
         if success:
