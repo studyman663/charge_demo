@@ -12,7 +12,7 @@ var waitingAreaelement = document.getElementById("u180");
 var chargingAreaelement = document.getElementById("u189");
 var statuselement = document.getElementById("u192");
 var fastelement = document.getElementById("u196");
-
+myFunction();
 setInterval(myFunction, 4000); // 每秒执行一次 myFunction 函数
 
 window.addEventListener("load", myFunction);
@@ -66,13 +66,16 @@ function myFunction() {
           finish.textContent = "    拔出充电桩".replace(/ /g, "\u00A0");
           finish.style.backgroundColor = "rgb(68, 193, 193)";
           console.log("拔出");
+        } else if (data.status === "充电中") {
+          var modify = document.getElementById("u199");
+          modify.style.display = "none";
         } else {
           var modify = document.getElementById("u199");
-          modify.style.display = "block";
+          modify.style.display = "none";
           var cancel = document.getElementById("u200");
-          cancel.style.display = "none";
+          cancel.style.display = "block";
           var finish = document.getElementById("u201");
-          finish.style.display = "block";
+          finish.style.display = "none";
         }
       } else {
         var notFound = document.getElementById("u215");
@@ -215,7 +218,7 @@ confirmCancel.addEventListener("click", function () {
   });
 
   xhr.open("DELETE", localStorage.getItem("backendUrl") + "/charge");
-  
+
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -234,16 +237,48 @@ var clickcount = 0;
 
 var Finish = document.getElementById("u201");
 Finish.addEventListener("click", function () {
+  alert("11");
+  // var frame = document.getElementById("u152");
+  // console.log(clickcount);
+  // if (clickcount === 1) {
+  //   clickcount = 0;
+  //   window.location.href = "chargeselect.html";
+  //   frame.style.display = "none";
+  // }
+  // if (clickcount === 0) {
+  //   frame.style.display = "block";
+  // }
+
   var frame = document.getElementById("u152");
-  console.log(clickcount);
-  if (clickcount === 1) {
-    clickcount = 0;
-    window.location.href = "chargeselect.html";
-    frame.style.display = "none";
-  }
-  if (clickcount === 0) {
-    frame.style.display = "block";
-  }
+  frame.style.display = "none";
+
+  var xhr = new XMLHttpRequest();
+  xhr.withCredentials = false;
+
+  xhr.addEventListener("readystatechange", function () {
+    if (this.readyState === 4) {
+      var data = JSON.parse(xhr.responseText);
+      console.log(data);
+
+      clickcount++;
+
+      if (clickcount === 1) {
+        myFunction();
+      }
+      if (clickcount >= 2) {
+        window.location.href = "chargeselect.html";
+        clickcount = 0;
+      }
+    }
+  });
+
+  xhr.open("POST", localStorage.getItem("backendUrl") + "/charge/finish");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  var token = sessionStorage.getItem("token");
+  xhr.setRequestHeader("Authorization", "Bearer " + token);
+  xhr.setRequestHeader("Accept", "*/*");
+
+  xhr.send();
 });
 
 var confirmFinish = document.getElementById("u158");
