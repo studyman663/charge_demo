@@ -2,13 +2,16 @@
 window.addEventListener("DOMContentLoaded", function() {
     // 获取登录按钮元素
     var loginButton = document.getElementById("u30");
-  
     // 绑定点击事件监听器
     loginButton.addEventListener("click", function() {
       // 获取用户名和密码输入框的值
+      
+      console.log("backendUrl");
       var username = document.getElementById("u36_input").value;
       var password = document.getElementById("u33_input").value;
       var confirmPassword = document.getElementById("u27_input").value;
+      var backendUrl = document.getElementById("v36_input").value;
+      console.log(backendUrl);
   
        if (username.trim() === '用户名') {
       alert('请输入用户名');
@@ -35,14 +38,16 @@ window.addEventListener("DOMContentLoaded", function() {
         if (this.status === 201) {
          alert("register successfully!");
           // 跳转到主界面
-          window.location.href = "index.html";
+          window.location.href = "login.html";
         } else {
       alert("error: register failed");
         }
       }
     });
-  
-    xhr.open("POST", "http://127.0.0.1:4523/m1/2761433-0-default/user/register");
+    
+    // var back
+    xhr.open("POST", backendUrl + "/user/register");
+    console.log(backendUrl + "/user/register");
     xhr.setRequestHeader("User-Agent", "Apifox/1.0.0 (https://www.apifox.com)");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("Accept", "*/*");
