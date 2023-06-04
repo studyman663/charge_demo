@@ -5,20 +5,20 @@ function updateTimestamp() {
   // WARNING: For GET requests, body is set to null by browsers.
 
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
       console.log(this.responseText);
       var data = JSON.parse(this.responseText);
-      console.log(data);
+      console.log(data.time);
 
       datetimeInput.value = data.time;
     }
   });
 
-  xhr.open("GET", config.apiBaseUrl + "/time");
-  console.log(config.apiBaseUrl);
+  xhr.open("GET", localStorage.getItem("backendUrl") + "/time");
+  console.log(localStorage.getItem("backendUrl"));
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
   xhr.setRequestHeader("Accept", "*/*");

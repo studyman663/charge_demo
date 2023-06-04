@@ -36,9 +36,9 @@ submitButton.addEventListener("click", function () {
 
   // 发送 AJAX 请求
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
-  xhr.open("POST", config.apiBaseUrl + "/charge");
+  xhr.open("POST", localStorage.getItem("backendUrl") + "/charge");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
   xhr.setRequestHeader("Content-Type", "application/json");

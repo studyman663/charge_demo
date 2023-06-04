@@ -4,48 +4,6 @@ nameText.textContent = username;
 var nameText1 = document.getElementById("u175");
 nameText1.textContent = username;
 
-// var pileelement = document.getElementById("u182");
-// var pile = sessionStorage.getItem("pile");
-
-// var amountelement = document.getElementById("u186");
-// var amount = sessionStorage.getItem("amount");
-
-// var totalAmountelement = document.getElementById("u184");
-// var totalAmount = sessionStorage.getItem("totalAmount");
-
-// var positionelement = document.getElementById("u178");
-// var position = sessionStorage.getItem("position");
-
-// var waitingAreaelement = document.getElementById("u180");
-// var waitingArea = sessionStorage.getItem("waitingArea");
-
-// var chargingAreaelement = document.getElementById("u189");
-// var chargingArea = sessionStorage.getItem("chargingArea");
-
-// var statuselement = document.getElementById("u192");
-// var status1 = sessionStorage.getItem("status");
-
-// var fastelement = document.getElementById("u196");
-// var fast = sessionStorage.getItem("fast");
-
-// pileelement.textContent = pile;
-// amountelement.textContent = amount;
-// totalAmountelement.textContent = totalAmount;
-// positionelement.textContent = position;
-// statuselement.textContent = status1;
-// if (fast === 'true')
-//   fastelement.textContent = "  快充";
-// else
-//   fastelement.textContent = "  慢充";
-//   if (waitingArea === 'true')
-//   waitingAreaelement.textContent = "是";
-//   else
-//   waitingAreaelement.textContent = "否";
-//   if (chargingArea === 'true')
-//   chargingAreaelement.textContent = "是";
-//   else
-//   chargingAreaelement.textContent = "否";
-
 var pileelement = document.getElementById("u182");
 var amountelement = document.getElementById("u186");
 var totalAmountelement = document.getElementById("u184");
@@ -55,7 +13,7 @@ var chargingAreaelement = document.getElementById("u189");
 var statuselement = document.getElementById("u192");
 var fastelement = document.getElementById("u196");
 
-setInterval(myFunction, 1000); // 每秒执行一次 myFunction 函数
+setInterval(myFunction, 4000); // 每秒执行一次 myFunction 函数
 
 window.addEventListener("load", myFunction);
 
@@ -63,7 +21,7 @@ function myFunction() {
   // WARNING: For GET requests, body is set to null by browsers.
 
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
@@ -91,15 +49,14 @@ function myFunction() {
         chargingAreaelement.textContent =
           data.chargingArea === true ? "是" : "否";
 
-        if (data.status === "等候区排队中"){
+        if (data.status === "等候区排队中") {
           var modify = document.getElementById("u199");
           modify.style.display = "block";
           var cancel = document.getElementById("u200");
           cancel.style.display = "block";
           var finish = document.getElementById("u201");
           finish.style.display = "none";
-        }
-        else if (data.status === "充电完成"){
+        } else if (data.status === "充电完成") {
           var modify = document.getElementById("u199");
           modify.style.display = "none";
           var cancel = document.getElementById("u200");
@@ -107,10 +64,9 @@ function myFunction() {
           var finish = document.getElementById("u201");
           finish.style.display = "block";
           finish.textContent = "    拔出充电桩".replace(/ /g, "\u00A0");
-          finish.style.backgroundColor =  "rgb(68, 193, 193)";
+          finish.style.backgroundColor = "rgb(68, 193, 193)";
           console.log("拔出");
-        }
-        else {
+        } else {
           var modify = document.getElementById("u199");
           modify.style.display = "block";
           var cancel = document.getElementById("u200");
@@ -118,39 +74,20 @@ function myFunction() {
           var finish = document.getElementById("u201");
           finish.style.display = "block";
         }
-        // if (waitingArea === "true"){
-        //   alert("");
-        //   waitingAreaelement.textContent = "是";}
-        // else{
-        // waitingAreaelement.textContent = "否";}
-        // if (chargingArea === "true"){
-        // chargingAreaelement.textContent = "是";}
-        // else{
-        // chargingAreaelement.textContent = "否";}
-        // if (fast === "true"){
-        //   fastelement.textContent = "  快充";}
-        // else{
-        //   fastelement.textContent = "  慢充";}
-      }
-      else {
+      } else {
         var notFound = document.getElementById("u215");
         notFound.style.display = "block";
       }
-      // else if (this.status === 404){
-      //   var notFounud = document.getElementById("u215");
-      //   notFounud.style.display = 'block';
-      // }
-    } 
+    }
   });
 
-  xhr.open("GET", config.apiBaseUrl + "/charge");
+  xhr.open("GET", localStorage.getItem("backendUrl") + "/charge");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
   xhr.setRequestHeader("Accept", "*/*");
 
   xhr.send();
 }
-
 
 var notFounud = document.getElementById("u220");
 notFounud.addEventListener("click", function () {
@@ -195,9 +132,9 @@ confirmModify.addEventListener("click", function () {
 
   // 发送 AJAX 请求
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
-  xhr.open("PUT", config.apiBaseUrl + "/charge");
+  xhr.open("PUT", localStorage.getItem("backendUrl") + "/charge");
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -214,25 +151,25 @@ confirmModify.addEventListener("click", function () {
   xhr.addEventListener("readystatechange", function () {
     if (xhr.readyState === 4) {
       var data = JSON.parse(xhr.responseText);
-        console.log("申请成功");
+      console.log("申请成功");
 
-        var pile = data.pile;
-        var amount = data.amount;
-        var status = data.status;
-        var totalAmount = data.totalAmount;
-        var chargingArea = data.chargingArea;
-        var position = data.position;
-        var waitingArea = data.waitingArea;
-        var fast = data.fast;
-        sessionStorage.setItem("pile", pile);
-        sessionStorage.setItem("amount", amount);
-        sessionStorage.setItem("status", status);
-        sessionStorage.setItem("totalAmount", totalAmount);
-        sessionStorage.setItem("chargingArea", chargingArea);
-        sessionStorage.setItem("position", position);
-        sessionStorage.setItem("waitingArea", waitingArea);
-        sessionStorage.setItem("fast", fast);
-        window.location.href = "checkcurrentbill.html";
+      var pile = data.pile;
+      var amount = data.amount;
+      var status = data.status;
+      var totalAmount = data.totalAmount;
+      var chargingArea = data.chargingArea;
+      var position = data.position;
+      var waitingArea = data.waitingArea;
+      var fast = data.fast;
+      sessionStorage.setItem("pile", pile);
+      sessionStorage.setItem("amount", amount);
+      sessionStorage.setItem("status", status);
+      sessionStorage.setItem("totalAmount", totalAmount);
+      sessionStorage.setItem("chargingArea", chargingArea);
+      sessionStorage.setItem("position", position);
+      sessionStorage.setItem("waitingArea", waitingArea);
+      sessionStorage.setItem("fast", fast);
+      window.location.href = "checkcurrentbill.html";
     } else {
       return;
     }
@@ -257,7 +194,7 @@ confirmCancel.addEventListener("click", function () {
   frame.style.display = "none";
 
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
@@ -277,7 +214,8 @@ confirmCancel.addEventListener("click", function () {
     }
   });
 
-  xhr.open("DELETE", config.apiBaseUrl + "/charge");
+  xhr.open("DELETE", localStorage.getItem("backendUrl") + "/charge");
+  
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -292,36 +230,47 @@ cancelFinish.addEventListener("click", function () {
   frame.style.display = "none";
 });
 
+var clickcount = 0;
+
 var Finish = document.getElementById("u201");
 Finish.addEventListener("click", function () {
   var frame = document.getElementById("u152");
-  frame.style.display = "block";
+  console.log(clickcount);
+  if (clickcount === 1) {
+    clickcount = 0;
+    window.location.href = "chargeselect.html";
+    frame.style.display = "none";
+  }
+  if (clickcount === 0) {
+    frame.style.display = "block";
+  }
 });
-
-var clickcount = 0;
 
 var confirmFinish = document.getElementById("u158");
 confirmFinish.addEventListener("click", function () {
+  if (clickcount === 1) {
+    myFunction();
+  }
   var frame = document.getElementById("u152");
   frame.style.display = "none";
 
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
       var data = JSON.parse(xhr.responseText);
-        console.log(data);
-        
-        clickcount ++;
-        if(clickcount >= 2){
-          window.location.href = "chargeselect.html";
-          // clickcount = 0;
-        }
+      console.log(data);
+
+      clickcount++;
+      if (clickcount >= 2) {
+        window.location.href = "chargeselect.html";
+        clickcount = 0;
+      }
     }
   });
 
-  xhr.open("POST", config.apiBaseUrl + "/charge/finish");
+  xhr.open("POST", localStorage.getItem("backendUrl") + "/charge/finish");
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -329,44 +278,3 @@ confirmFinish.addEventListener("click", function () {
 
   xhr.send();
 });
-
-// document.getElementById("u207").addEventListener("click", function() {
-//     var element = document.getElementById("u200");
-//     element.style.display = "none";
-//     element = document.getElementById("u201");
-//     element.style.display = "none";
-//     element = document.getElementById("u202");
-//     element.style.display = "none";
-//     element = document.getElementById("u203");
-//     element.style.display = "none";
-//     element = document.getElementById("u204");
-//     element.style.display = "none";
-//     element = document.getElementById("u205");
-//     element.style.display = "none";
-//     element = document.getElementById("u206");
-//     element.style.display = "none";
-//     element = document.getElementById("u207");
-//     element.style.display = "none";
-//     element = document.getElementById("u208");
-//     element.style.display = "none";
-//   });
-//   document.getElementById("u208").addEventListener("click", function() {
-//     var element = document.getElementById("u200");
-//     element.style.display = "none";
-//     element = document.getElementById("u201");
-//     element.style.display = "none";
-//     element = document.getElementById("u202");
-//     element.style.display = "none";
-//     element = document.getElementById("u203");
-//     element.style.display = "none";
-//     element = document.getElementById("u204");
-//     element.style.display = "none";
-//     element = document.getElementById("u205");
-//     element.style.display = "none";
-//     element = document.getElementById("u206");
-//     element.style.display = "none";
-//     element = document.getElementById("u207");
-//     element.style.display = "none";
-//     element = document.getElementById("u208");
-//     element.style.display = "none";
-//   });

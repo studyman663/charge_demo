@@ -8,7 +8,7 @@ report.addEventListener("click", () => {
 });
 
 var xhr = new XMLHttpRequest();
-xhr.withCredentials = true;
+xhr.withCredentials = false;
 
 xhr.addEventListener("readystatechange", function () {
   if (this.readyState === 4) {
@@ -47,8 +47,7 @@ xhr.addEventListener("readystatechange", function () {
   }
 });
 
-xhr.open("GET", config.apiBaseUrl + "/piles?limit=10&skip=0");
-console.log(config.apiBaseUrl);
+xhr.open("GET", localStorage.getItem("backendUrl") + "/piles?limit=10&skip=0");
 var token = sessionStorage.getItem("token");
 console.log(token);
 xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -72,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(token);
 
       // 发送AJAX请求获取充电桩详细信息
-      fetch(config.apiBaseUrl + `/pile/${pileId}`, {
+      fetch(localStorage.getItem("backendUrl") + `/pile/${pileId}`, {
         headers: {
           Authorization: "Bearer " + token,
         },
@@ -207,10 +206,11 @@ function updatePileStatus(pileId, status) {
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Authorization", "Bearer " + token);
 
-  fetch(config.apiBaseUrl + `/pile/${pileId}`, {
+  fetch(localStorage.getItem("backendUrl") + `/pile/${pileId}`, {
     method: "PUT",
     headers: myHeaders,
     body: JSON.stringify(data),
+    credentials: omit,
   })
     .then((response) => response.json())
     .then((data) => {
@@ -229,7 +229,7 @@ function updatePileStatus(pileId, status) {
       const pileDeleted = tableBody.querySelector(
         `.deleted[data-pile-id="${pileId}"]`
       );
-      
+
       pileFast.innerHTML = data.fast ? "是" : "否";
       pileCreated.innerHTML = data.created_at;
       pileUpdated.innerHTML = data.updated_at;
@@ -264,8 +264,12 @@ pileTable.addEventListener("click", (event) => {
     if (isPileId) {
       const pileId = target.dataset.pileId;
       const xhr = new XMLHttpRequest();
-
-      xhr.open("GET", config.apiBaseUrl + `/pile/${pileId}`, true);
+      xhr.credentials = false;
+      xhr.open(
+        "GET",
+        localStorage.getItem("backendUrl") + `/pile/${pileId}`,
+        true
+      );
       var token = sessionStorage.getItem("token");
       console.log(token);
       xhr.setRequestHeader("Authorization", "Bearer " + token);
@@ -287,8 +291,12 @@ pileTable.addEventListener("click", (event) => {
     if (isPileId) {
       const pileId = target.dataset.pileId;
       const xhr = new XMLHttpRequest();
-
-      xhr.open("GET", config.apiBaseUrl + `/pile/${pileId}/wait`, true);
+      xhr.credentials = false;
+      xhr.open(
+        "GET",
+        localStorage.getItem("backendUrl") + `/pile/${pileId}/wait`,
+        true
+      );
       var token = sessionStorage.getItem("token");
       xhr.setRequestHeader("Authorization", "Bearer " + token);
 

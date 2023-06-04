@@ -39,8 +39,8 @@ window.addEventListener("DOMContentLoaded", function () {
         console.log(data);
         if (data.code === 0) {
           if (
-            username.trim() === "adminadmin" &&
-            password.trim() === "password"
+            username.trim() === "admin123" &&
+            password.trim() === "123456"
           ) {
             var backendUrl = document.getElementById("back-end_input").value;
             console.log(3);
@@ -52,7 +52,7 @@ window.addEventListener("DOMContentLoaded", function () {
             console.log(1);
             localStorage.setItem("backendUrl", backendUrl);
 
-            console.log(config.apiBaseUrl);
+            // console.log(config.apiBaseUrl);
             window.location.href = "../admin/admin-manage.html";
           } else {
             console.log(1);
@@ -79,6 +79,7 @@ window.addEventListener("DOMContentLoaded", function () {
     });
 
     xhr.open("POST", backendUrl + "/user/login");
+    xhr.withCredentials = false;
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("Accept", "*/*");
 

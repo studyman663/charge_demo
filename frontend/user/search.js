@@ -67,9 +67,13 @@ function Search() {
   var searchID = document.getElementById("inp").value;
   console.log(searchID);
 
-  xhr.open("GET", config.apiBaseUrl + "/charge/bill/" + searchID);
-  console.log(config.apiBaseUrl + "/charge/bill/" + searchID);
+  xhr.open(
+    "GET",
+    localStorage.getItem("backendUrl") + "/charge/bill/" + searchID
+  );
+  console.log(localStorage.getItem("backendUrl") + "/charge/bill/" + searchID);
   xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.withCredentials = false;
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);
   xhr.setRequestHeader("Accept", "*/*");

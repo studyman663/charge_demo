@@ -1,6 +1,6 @@
 window.addEventListener("load", function () {
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
+  xhr.withCredentials = false;
 
   xhr.addEventListener("readystatechange", function () {
     if (this.readyState === 4) {
@@ -127,7 +127,8 @@ window.addEventListener("load", function () {
     }
   });
 
-  xhr.open("GET", config.apiBaseUrl + "/charge/bills");
+  xhr.open("GET", localStorage.getItem("backendUrl") + "/charge/bills");
+  xhr.withCredentials = false;
   xhr.setRequestHeader("Content-Type", "application/json");
   var token = sessionStorage.getItem("token");
   xhr.setRequestHeader("Authorization", "Bearer " + token);

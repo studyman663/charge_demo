@@ -8,7 +8,7 @@ report.addEventListener("click", () => {
 });
 
 var xhr = new XMLHttpRequest();
-xhr.withCredentials = true;
+xhr.withCredentials = false;
 
 xhr.addEventListener("readystatechange", function () {
   if (this.readyState === 4) {
@@ -31,8 +31,7 @@ xhr.addEventListener("readystatechange", function () {
   }
 });
 
-xhr.open("GET", config.apiBaseUrl + "/report");
-console.log(config.apiBaseUrl);
+xhr.open("GET", localStorage.getItem("backendUrl") + "/report");
 var token = sessionStorage.getItem("token");
 xhr.setRequestHeader("Authorization", "Bearer "+token);
 xhr.setRequestHeader("Accept", "*/*");
@@ -75,13 +74,15 @@ function handleData(data) {
 // 发送请求
 submitButton.addEventListener("click", () => {
   const date = document.getElementById("date-picker").value;
-  console.log(config.apiBaseUrl + "/report?" + date);
   var token = sessionStorage.getItem("token");
-
-  fetch(config.apiBaseUrl + "/report?date=" + date, {
+  console.log(date);
+  fetch(localStorage.getItem("backendUrl") + "/report", {
     headers: {
-      "Authorization": "Bearer " + token
-    }
+      date: String(date),
+      Authorization: "Bearer " + token,
+    },
+    credentials: false,
+    method: "GET"
   })
     .then((response) => response.json())
     .then((data) => handleData(data));
