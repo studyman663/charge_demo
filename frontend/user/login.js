@@ -60,8 +60,8 @@ window.addEventListener("DOMContentLoaded", function () {
             var backendUrl = document.getElementById("back-end_input").value;
             console.log(backendUrl);
             if (backendUrl !== "") {
-              localStorage.setItem("backendUrl", backendUrl);
-              console.log(config.apiBaseUrl);
+               localStorage.setItem("backendUrl", backendUrl);
+              // console.log(config.apiBaseUrl);
             }
 
             var token = data.token; // 这里假设您从后端获取的 token
