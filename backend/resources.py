@@ -124,11 +124,13 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": fast,
-                "pile": -1 if float(request.charge_pile_id) is None else float(request.charge_pile_id),
+                "pile": -1 if request.charge_pile_id is None else request.charge_pile_id,
                 "position": int(position),
                 "status": status[request.state],
                 "totalAmount": request.battery_size,
-                "waitingArea": w_area
+                "waitingArea": w_area,
+                "currentAmount":request.currentAmount,
+                "currentFee":request.currentFee
             }
         else:
             return {
@@ -210,7 +212,7 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": data['fast'],
-                "pile": -1 if int(charge_request.charge_pile_id) is None else int(charge_request.charge_pile_id),
+                "pile": -1 if charge_request.charge_pile_id is None else charge_request.charge_pile_id,
                 "position": int(position),
                 "status": status[state],
                 "totalAmount": float(data['totalAmount']),
@@ -282,7 +284,7 @@ class user_charge(Resource):
                 "chargingArea": c_area,
                 "code": 0,
                 "fast": data['fast'],
-                "pile": -1 if float(record.charge_pile_id) is None else float(record.charge_pile_id),
+                "pile": -1 if record.charge_pile_id is None else record.charge_pile_id,
                 "position": int(record.charge_id[1:]),
                 "status": status[state],
                 "totalAmount": float(data['totalAmount']),
@@ -491,6 +493,7 @@ class get_single_bill(Resource):
     @jwt_required()
     def get(self, billId):
         record = db.session.query(ChargeRecord).filter(ChargeRecord.order_id == billId).first()
+        print(record)
         if record is None:
             return {
                        "code": -1,
