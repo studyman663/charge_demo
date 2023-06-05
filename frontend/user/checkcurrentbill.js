@@ -1,5 +1,22 @@
 var state;
 
+var datetimeInput = document.getElementById("datetimeInput");
+
+// WARNING: For GET requests, body is set to null by browsers.
+
+var xhr = new XMLHttpRequest();
+xhr.withCredentials = false;
+
+xhr.addEventListener("readystatechange", function () {
+  if (this.readyState === 4) {
+    console.log(this.responseText);
+    var data = JSON.parse(this.responseText);
+    console.log(data.time);
+
+    datetimeInput.value = data.time;
+  }
+});
+
 var username = sessionStorage.getItem("username");
 var nameText = document.getElementById("u145");
 nameText.textContent = username;
@@ -14,6 +31,8 @@ var waitingAreaelement = document.getElementById("u180");
 var chargingAreaelement = document.getElementById("u189");
 var statuselement = document.getElementById("u192");
 var fastelement = document.getElementById("u196");
+var currentAmountelement = document.getElementById("amount_1");
+var currentFeeelement = document.getElementById("fee_1");
 myFunction();
 setInterval(myFunction, 4000); // 每秒执行一次 myFunction 函数
 
@@ -40,6 +59,8 @@ function myFunction() {
         fast = data.fast;
         waitingArea = data.waitingArea;
         chargingArea = data.chargingArea;
+        currentAmountelement.textContent = data.currentAmount;
+        currentFeeelement.textContent = data.currentFee;
         // waitingAreaelement.textContent = data.waitingArea；
         waitingAreaelement.textContent =
           data.waitingArea === true ? "是" : "否";

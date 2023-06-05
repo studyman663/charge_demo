@@ -1,5 +1,6 @@
 // 在页面加载完成后绑定事件监听器
 window.addEventListener("DOMContentLoaded", function () {
+  
   // 获取登录按钮元素
   var loginButton = document.getElementById("u17");
 
@@ -39,6 +40,7 @@ window.addEventListener("DOMContentLoaded", function () {
         var data = JSON.parse(xhr.responseText);
         console.log(data);
         if (data.code === 0) {
+          localStorage.setItem("clock", "0");
           if (username.trim() === "admin123" && password.trim() === "123456") {
             var backendUrl = document.getElementById("back-end_input").value;
             if (backendUrl !== "") {
