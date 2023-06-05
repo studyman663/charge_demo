@@ -72,7 +72,7 @@ function myFunction() {
           var modify = document.getElementById("u199");
           modify.style.display = "none";
           var cancel = document.getElementById("u200");
-          cancel.style.display = "none";
+          cancel.style.display = "block";
           var finish = document.getElementById("u201");
           finish.style.display = "none";
         } else {
@@ -201,9 +201,10 @@ var confirmCancel = document.getElementById("u165");
 confirmCancel.addEventListener("click", function () {
   if (state === "充电中") {
     Finish();
+    console.log("finish");
     return;
   }
-
+  console.log("cancel");
   var frame = document.getElementById("u159");
   frame.style.display = "none";
 
