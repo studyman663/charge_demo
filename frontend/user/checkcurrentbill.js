@@ -191,16 +191,90 @@ cancelCancel.addEventListener("click", function () {
   frame.style.display = "none";
 });
 
-var cancel = document.getElementById("u200");
-cancel.addEventListener("click", function () {
-  var frame = document.getElementById("u159");
-  frame.style.display = "block";
-});
+// var cancel = document.getElementById("u200");
+// cancel.addEventListener("click", function () {
+//   var frame = document.getElementById("u159");
+//   frame.style.display = "block";
+// });
 
-var confirmCancel = document.getElementById("u165");
+function Finish() {
+  // var frame = document.getElementById("u152");
+  // console.log(clickcount);
+  // if (clickcount === 1) {
+  //   clickcount = 0;
+  //   window.location.href = "chargeselect.html";
+  //   frame.style.display = "none";
+  // }
+  // if (clickcount === 0) {
+  //   frame.style.display = "block";
+  // }
+
+  var frame = document.getElementById("u152");
+  frame.style.display = "none";
+
+  var xhr = new XMLHttpRequest();
+  xhr.withCredentials = false;
+
+  xhr.addEventListener("readystatechange", function () {
+    if (this.readyState === 4) {
+      var data = JSON.parse(xhr.responseText);
+      console.log(data);
+
+      clickcount++;
+
+      if (clickcount === 1) {
+        myFunction();
+      }
+      if (clickcount >= 2) {
+        window.location.href = "chargeselect.html";
+        clickcount = 0;
+      }
+    }
+  });
+
+  xhr.open("POST", localStorage.getItem("backendUrl") + "/charge/finish");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  var token = sessionStorage.getItem("token");
+  xhr.setRequestHeader("Authorization", "Bearer " + token);
+  xhr.setRequestHeader("Accept", "*/*");
+
+  xhr.send();
+}
+
+var confirmCancel = document.getElementById("u200");
 confirmCancel.addEventListener("click", function () {
+  console.log(state);
   if (state === "充电中") {
-    Finish();
+    var frame = document.getElementById("u152");
+    frame.style.display = "none";
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = false;
+
+    xhr.addEventListener("readystatechange", function () {
+      if (this.readyState === 4) {
+        var data = JSON.parse(xhr.responseText);
+        console.log(data);
+
+        clickcount++;
+
+        if (clickcount === 1) {
+          myFunction();
+        }
+        if (clickcount >= 2) {
+          window.location.href = "chargeselect.html";
+          clickcount = 0;
+        }
+      }
+    });
+
+    xhr.open("POST", localStorage.getItem("backendUrl") + "/charge/finish");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    var token = sessionStorage.getItem("token");
+    xhr.setRequestHeader("Authorization", "Bearer " + token);
+    xhr.setRequestHeader("Accept", "*/*");
+
+    xhr.send();
     console.log("finish");
     return;
   }
@@ -324,47 +398,3 @@ confirmFinish.addEventListener("click", function () {
 
   xhr.send();
 });
-
-function Finish() {
-  // var frame = document.getElementById("u152");
-  // console.log(clickcount);
-  // if (clickcount === 1) {
-  //   clickcount = 0;
-  //   window.location.href = "chargeselect.html";
-  //   frame.style.display = "none";
-  // }
-  // if (clickcount === 0) {
-  //   frame.style.display = "block";
-  // }
-
-  var frame = document.getElementById("u152");
-  frame.style.display = "none";
-
-  var xhr = new XMLHttpRequest();
-  xhr.withCredentials = false;
-
-  xhr.addEventListener("readystatechange", function () {
-    if (this.readyState === 4) {
-      var data = JSON.parse(xhr.responseText);
-      console.log(data);
-
-      clickcount++;
-
-      if (clickcount === 1) {
-        myFunction();
-      }
-      if (clickcount >= 2) {
-        window.location.href = "chargeselect.html";
-        clickcount = 0;
-      }
-    }
-  });
-
-  xhr.open("POST", localStorage.getItem("backendUrl") + "/charge/finish");
-  xhr.setRequestHeader("Content-Type", "application/json");
-  var token = sessionStorage.getItem("token");
-  xhr.setRequestHeader("Authorization", "Bearer " + token);
-  xhr.setRequestHeader("Accept", "*/*");
-
-  xhr.send();
-}
