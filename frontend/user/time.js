@@ -30,20 +30,21 @@ let intervalId = setInterval(updateTimestamp, 1000);
 //   clearInterval(intervalId);
 //   console.log("定时器已暂停");
 // }, 3000);
+var click = localStorage.getItem("clock");
 var timeStop = document.getElementById("timeStop");
-var click = 0;
-console.log("11");
 timeStop.addEventListener("click", function () {
-  if (click === 1) {
+  click = localStorage.getItem("clock");
+  console.log("click: " + click);
+  if (click === "1") {
     // 如果没有停止函数的执行，重新启动定时器
     intervalId = setInterval(updateTimestamp, 1000);
     console.log("Function started.");
     timeStop.textContent = "停止";
-    click = 0;
+    localStorage.setItem("clock", "0");
   } else {
     clearInterval(intervalId);
     console.log("Function stopped.");
     timeStop.textContent = "开始";
-    click = 1;
+    localStorage.setItem("clock", "1");
   }
 });
