@@ -114,6 +114,8 @@ class ChargeRequest(db.Model):
     charge_id = db.Column(db.String(20))  # 等候区排队号
     charge_pile_id = db.Column(db.String(20))  # 充电桩编号
     request_submit_time = db.Column(db.BIGINT)  # 充电请求提交时间
+    currentAmount=db.Column(db.Float,default=0) #当前充电量
+    currentFee=db.Column(db.Float,default=0) #当前费用
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()

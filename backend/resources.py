@@ -309,6 +309,11 @@ class user_charge(Resource):
                 db.session.query(WaitArea).filter(WaitArea.request_id == request.id).delete()
                 db.session.query(WaitQueue).filter(WaitQueue.charge_id == request.charge_id).delete()
                 db.session.commit()
+            # elif request.state==2:
+            #     success=True
+            #     db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+            #     db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
+            #     db.session.commit()
             else:
                 success = False
                 error_msg = '车辆不在等待区，取消失败'
@@ -351,9 +356,9 @@ class finish_charge(Resource):
                 end_time = now
                 charged_time = (end_time - begin_time).seconds  # 充电时长
                 if request.charge_mode == "F":
-                    rate = 30
+                    rate = fast_power
                 else:
-                    rate = 10
+                    rate = slow_power
                 charged_amount = float('%0.2f' % (
                         charged_time / 3600 * rate))  # 充电量
                 service_cost = float('%0.2f' %
@@ -450,6 +455,10 @@ class finish_charge(Resource):
                 db.session.query(ChargeWaitArea).filter(
                     ChargeWaitArea.request_id == request.id).delete()
                 db.session.commit()
+            elif request.state==2:
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+                db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
+                db.session.commit()
             else:
                 db.session.query(ChargeRequest).filter(ChargeRequest.user_id == user.id).delete()
                 db.session.commit()
@@ -515,9 +524,9 @@ class get_bills(Resource):
         skip = data['skip']
         user = User.find_by_username(get_jwt_identity())
         if user.admin:
-            record_list = db.session.query(ChargeRecord).filter(ChargeRecord.userId == user.id).all()
+            record_list = db.session.query(ChargeRecord).all()
         else:
-            record_list=db.session.query(ChargeRecord).all()
+            record_list = db.session.query(ChargeRecord).filter(ChargeRecord.userId == user.id).all()
         if len(record_list) == 0:
             return {
                        "code": -1,
@@ -779,12 +788,13 @@ class get_report(Resource):
 
 class sys_time(Resource):
     def get(self):
-        start_time = datetime.datetime.now()
-        curtime = datetime.datetime.fromtimestamp(
-            int((datetime.datetime.now().timestamp() - start_time.timestamp()) + start_time.timestamp())).strftime(
-            '%Y-%m-%d %H:%M:%S')
+        # start_time = datetime.datetime.now()
+        # curtime = datetime.datetime.fromtimestamp(
+        #     int((datetime.datetime.now().timestamp() - start_time.timestamp()) + start_time.timestamp())).strftime(
+        #     '%Y-%m-%d %H:%M:%S')
+        timer=Timer()
         return {
-            "time": curtime
+            "time": timer.get_cur_format_time()
         }
 
 
