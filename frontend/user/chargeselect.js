@@ -1,4 +1,5 @@
 
+
 var username = sessionStorage.getItem("username");
 var nameText = document.getElementById("u62");
 nameText.textContent = username;
@@ -17,15 +18,15 @@ var totalAmount = document.querySelector("#u76_input").value;
 var submitButton = document.getElementById("u73");
 
 // 监听提交按钮的点击事件
-submitButton.addEventListener("click", function () {  
+submitButton.addEventListener("click", function () {
   amount = document.querySelector("#u75_input").value;
   totalAmount = document.querySelector("#u76_input").value;
   if (amount.trim() === "") {
     alert("请输入充电量");
-    return ;
+    return;
   } else if (totalAmount.trim() === "") {
     alert("请输入电池容量");
-    return ;
+    return;
   }
   // 判断选择的充电模式是否为快充
   if (chargeModeSelect.value === "快充") {
@@ -55,8 +56,7 @@ submitButton.addEventListener("click", function () {
   xhr.addEventListener("readystatechange", function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
-        
-        sessionStorage.setItem("jump","0");
+        sessionStorage.setItem("jump", "0");
         var jump = sessionStorage.getItem("jump");
         console.log(jump);
 
