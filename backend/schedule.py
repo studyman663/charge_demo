@@ -92,6 +92,7 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
                 db.session.query(Charger).filter(Charger.id == charger_tmp.id).update({
                     "last_end_time": (db.session.query(Charger.last_end_time).filter(Charger.id == charger_tmp.id).first()[0] if now_queue_len != 0 else Timer().get_cur_timestamp())
                 })
+                db.session.commit()
                 if now_queue_len < charge_max_num:  # 该充电区有空位
                     endtime_list.append(charger_tmp.last_end_time)
                     their_pile_id.append(charger_tmp.id)
@@ -102,6 +103,8 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
                 db.session.query(Charger).filter(Charger.id == charger_tmp.id).update({
                     "last_end_time": (db.session.query(Charger.last_end_time).filter(Charger.id == charger_tmp.id).first()[0] if now_queue_len != 0 else Timer().get_cur_timestamp())
                 })
+                db.session.commit()
+                print('now_queue_len: ',now_queue_len)
                 if now_queue_len < charge_max_num:  # 该充电区有空位
                     endtime_list.append(charger_tmp.last_end_time)
                     their_pile_id.append(charger_tmp.id)
@@ -123,12 +126,14 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
             db.session.query(ChargeRequest.charge_time).filter(
                 ChargeRequest.id == request_id).first()[0]
         })
+        db.session.commit()
         if db.session.query(ChargeArea).filter(ChargeArea.request_id == request_id).count() == 0:
             db.session.add(ChargeArea(pile_id=pile_id, request_id=request_id))
         else:
             db.session.query(ChargeArea).filter(ChargeArea.request_id == request_id).update({
                 "pile_id": pile_id
             })
+        db.session.commit()
         db.session.query(WaitArea).filter(
             WaitArea.request_id == request_id).delete()
         db.session.query(WaitQueue).filter(WaitQueue.charge_id == db.session.query(ChargeRequest.charge_id).filter(
@@ -137,6 +142,7 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
             ChargeWaitArea.request_id == request_id).delete()
         charge_list = db.session.query(ChargeArea.request_id).filter(
             ChargeArea.pile_id == pile_id).all()
+        db.session.commit()
         # 直接到了队首，直接充电
         if str(request_id) == charge_list[0][0] and db.session.query(ChargeRequest).filter(
                 and_(ChargeRequest.charge_pile_id == pile_id, ChargeRequest.state == 3)).first() is None:

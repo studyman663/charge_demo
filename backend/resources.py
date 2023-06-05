@@ -262,11 +262,20 @@ class user_charge(Resource):
                     "charge_id": charge_id,
                     "type": charge_mode
                 })
+                # 修改后数据写入数据库
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == record.id).update({
+                    "charge_mode": charge_mode,
+                    "require_amount": require_amount,
+                    "battery_size": battery_size,
+                    "charge_id": charge_id
+                })
+                db.session.commit()
                 schedule(2, record.id)
             # 修改后数据写入数据库
             db.session.query(ChargeRequest).filter(ChargeRequest.id == record.id).update({
                 "charge_mode": charge_mode,
                 "require_amount": require_amount,
+                "battery_size": battery_size,
                 "charge_id": charge_id
             })
             db.session.commit()
