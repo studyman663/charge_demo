@@ -5,6 +5,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // 绑定点击事件监听器
   loginButton.addEventListener("click", function (event) {
+    var backendUrl = document.getElementById("back-end_input").value;
     // 阻止表单默认提交行为
     event.preventDefault();
 
@@ -38,12 +39,8 @@ window.addEventListener("DOMContentLoaded", function () {
         var data = JSON.parse(xhr.responseText);
         console.log(data);
         if (data.code === 0) {
-          if (
-            username.trim() === "admin123" &&
-            password.trim() === "123456"
-          ) {
+          if (username.trim() === "admin123" && password.trim() === "123456") {
             var backendUrl = document.getElementById("back-end_input").value;
-            console.log(3);
             if (backendUrl !== "") {
               console.log(2);
               sessionStorage.setItem("token", data.token);
@@ -60,7 +57,7 @@ window.addEventListener("DOMContentLoaded", function () {
             var backendUrl = document.getElementById("back-end_input").value;
             console.log(backendUrl);
             if (backendUrl !== "") {
-               localStorage.setItem("backendUrl", backendUrl);
+              localStorage.setItem("backendUrl", backendUrl);
               // console.log(config.apiBaseUrl);
             }
 

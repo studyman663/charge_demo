@@ -1,5 +1,4 @@
 function updateTimestamp() {
-  var timestampInput = document.getElementById("timestampInput");
   var datetimeInput = document.getElementById("datetimeInput");
 
   // WARNING: For GET requests, body is set to null by browsers.
@@ -26,5 +25,25 @@ function updateTimestamp() {
   xhr.send();
 }
 
-// 每0.1秒更新一次时间戳
-setInterval(updateTimestamp, 1000);
+let intervalId = setInterval(updateTimestamp, 1000);
+// setTimeout(function () {
+//   clearInterval(intervalId);
+//   console.log("定时器已暂停");
+// }, 3000);
+var timeStop = document.getElementById("timeStop");
+var click = 0;
+console.log("11");
+timeStop.addEventListener("click", function () {
+  if (click === 1) {
+    // 如果没有停止函数的执行，重新启动定时器
+    intervalId = setInterval(updateTimestamp, 1000);
+    console.log("Function started.");
+    timeStop.textContent = "停止";
+    click = 0;
+  } else {
+    clearInterval(intervalId);
+    console.log("Function stopped.");
+    timeStop.textContent = "开始";
+    click = 1;
+  }
+});
