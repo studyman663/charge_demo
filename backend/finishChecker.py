@@ -9,27 +9,31 @@ from config import fast_power, slow_power
 from models import ChargeRequest, ChargeRecord, Charger, WaitArea, WaitQueue, ChargeArea, ChargeWaitArea, User
 from Timer import Timer
 from schedule import schedule
+
+
 def check_finish():
     timer = Timer()
     to_check = db.session.query(ChargeRequest).filter(ChargeRequest.state == 3).all()
     for charge_request in to_check:
         if charge_request.start_time + charge_request.charge_time <= timer.get_cur_timestamp():
-            end_charging_request(db.session.query(User).filter(User.id == charge_request.user_id).first(), charge_request.start_time + charge_request.charge_time)
+            end_charging_request(db.session.query(User).filter(User.id == charge_request.user_id).first(),
+                                 charge_request.start_time + charge_request.charge_time)
             print("finish checker: end charging request " + str(charge_request.id))
         else:
-            update_charging_request(charge_request,timer.get_cur_timestamp())
+            update_charging_request(charge_request, timer.get_cur_timestamp())
 
-def update_charging_request(request,cur_time):
+
+def update_charging_request(request, cur_time):
     timer = Timer()
     end_time = datetime.datetime.fromtimestamp(cur_time)
     begin_time = datetime.datetime.fromtimestamp(request.start_time)
     charged_time = (end_time - begin_time).seconds  # 充电时长
-    if request.charge_mode=='F':
-        rate=fast_power
+    if request.charge_mode == 'F':
+        rate = fast_power
     else:
-        rate=slow_power
-    cur_amount = (charged_time/ 3600) * rate
-    service_cost = float('%0.2f' %(0.8 * float(cur_amount)))  # 服务费用
+        rate = slow_power
+    cur_amount = (charged_time / 3600) * rate
+    service_cost = float('%0.2f' % (0.8 * float(cur_amount)))  # 服务费用
     clocks = [7, 10, 15, 18, 21, 23, 31]
     fees = [0.7, 1.0, 0.7, 1.0, 0.7, 0.4]
     # 判断开始时间和结束时间的 时间区域
@@ -54,7 +58,7 @@ def update_charging_request(request,cur_time):
                      (60 - begin_time.minute) * \
                      60 + 60 - begin_time.second
         diff_time2 = ((end_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - clocks[
-                         (end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
+            (end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
         zones = []  # 要计算的时间区域。①如果开始区域为2，结束为5，得到2、3、4、5；②如果开始为5，结束为2，得到5、6、1、2
         if begin_time_zone < end_time_zone:
             for i in range(begin_time_zone, end_time_zone + 1):
@@ -83,6 +87,7 @@ def update_charging_request(request,cur_time):
     })
     db.session.commit()
 
+
 def end_charging_request(user, end_time):
     # TODO(2): 处理，取消充电请求
     # question：用户的最后一个请求一定是最新的要取消的请求吗？
@@ -109,7 +114,7 @@ def end_charging_request(user, end_time):
         else:
             rate = slow_power
         charged_amount = float('%0.2f' % (
-            charged_time / 3600 * rate))  # 充电量
+                charged_time / 3600 * rate))  # 充电量
         service_cost = float('%0.2f' %
                              (0.8 * float(charged_amount)))  # 服务费用
         # 计算充电费用：将一天分成6个时间区域，只考虑24h内充完电的情况
@@ -135,14 +140,16 @@ def end_charging_request(user, end_time):
         end_time_zone = end_time_zone % len(clocks)
         if begin_time_zone == end_time_zone:
             charging_cost = float('%.2f' % (
-                charged_amount * fees[begin_time_zone - 1]))  # 充电费用
+                    charged_amount * fees[begin_time_zone - 1]))  # 充电费用
         else:
             # 分别计算开始时间到临界值的时间，结束时间到临界值的时间。单位为秒
-            diff_time1 = (clocks[begin_time_zone] - (begin_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - 1) * 3600 + \
+            diff_time1 = (clocks[begin_time_zone] - (
+                begin_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - 1) * 3600 + \
                          (60 - begin_time.minute) * \
-                60 + 60 - begin_time.second
+                         60 + 60 - begin_time.second
             diff_time2 = (
-                (end_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - clocks[(end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
+                                 (end_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - clocks[
+                             (end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
             zones = []  # 要计算的时间区域。①如果开始区域为2，结束为5，得到2、3、4、5；②如果开始为5，结束为2，得到5、6、1、2
             if begin_time_zone < end_time_zone:
                 for i in range(begin_time_zone, end_time_zone + 1):
@@ -156,13 +163,13 @@ def end_charging_request(user, end_time):
             for i in zones:
                 if i == begin_time_zone:
                     charging_cost = diff_time1 / 3600 * \
-                        rate * fees[i - 1]
+                                    rate * fees[i - 1]
                 elif i == end_time_zone:
                     charging_cost += diff_time2 / 3600 * \
-                        rate * fees[i - 1]
+                                     rate * fees[i - 1]
                 else:
                     charging_cost += (clocks[i] - clocks[i - 1]) * \
-                        rate * fees[i - 1]
+                                     rate * fees[i - 1]
         charging_cost = float('%.2f' % charging_cost)  # 充电费用
         total_cost = service_cost + charging_cost  # 总费用
         # 添加充电详单
@@ -173,7 +180,8 @@ def end_charging_request(user, end_time):
                                      chargeEndTime=end_time.strftime(
                                          "%Y-%m-%d %H:%M:%S"),
                                      chargeFee=charging_cost, serviceFee=service_cost,
-                                     totalFee=total_cost, pileId=request.charge_pile_id, userId=user.id,updated_at=create_time
+                                     totalFee=total_cost, pileId=request.charge_pile_id, userId=user.id,
+                                     updated_at=create_time
                                      )
         db.session.add(charge_record)
         db.session.commit()
@@ -182,7 +190,7 @@ def end_charging_request(user, end_time):
             Charger.id == request.charge_pile_id).first()
         charger.cumulative_charging_time += charged_time
         charger.cumulative_charging_amount = '%.2f' % (
-            float(charger.cumulative_charging_amount) + charged_amount)
+                float(charger.cumulative_charging_amount) + charged_amount)
         charger.cumulative_usage_times += 1
         # 重新写入
         db.session.query(Charger).filter(Charger.id == request.charge_pile_id).update({
@@ -196,8 +204,8 @@ def end_charging_request(user, end_time):
         # 2.更新request状态
         db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).update({
             "state": 0,
-            "currentAmount":request.require_amount,
-            "currentFee":total_cost
+            "currentAmount": request.require_amount,
+            "currentFee": total_cost
         })
         # remove
         db.session.query(WaitArea).filter(
@@ -210,50 +218,37 @@ def end_charging_request(user, end_time):
             ChargeWaitArea.request_id == request.id).delete()
         db.session.commit()
     return
-def print_result():
-    pass
-    # chargelist = []
-    # waitlist=[]
-    # pile_list = db.session.query(Charger).all()
-    # for pile in pile_list:
-    #     c_request=db.session.query(ChargeArea.request_id).filter(ChargeArea.pile_id==pile.id).all()
-    #     if len(c_request)!=0:
-    #         for tmp in c_request:
-    #             request=db.session.query(ChargeRequest).filter(ChargeRequest.id==tmp).first()
-    #             name=db.session.query(User.username).filter(User.id==request.user_id).first()
-    #             chargelist.append({
-    #                 "pile_id":pile.id,
-    #                 "car_id": name,
-    #                 "currentAmount": round(request.currentAmount, 2),
-    #                 "currentFee": round(request.currentFee, 2)
-    #             })
-    # wait_list=db.session.query(WaitArea).all()
-    # for wait in wait_list:
-    #     request=db.session.query(ChargeRequest).filter(ChargeRequest.id==wait.request_id).first()
-    #     name = db.session.query(User.username).filter(User.id == request.user_id).first()
-    #     waitlist.append({
-    #         "car_id": name,
-    #         "charge_mode": request.charge_mode,
-    #         "require_amount": round(request.require_amount, 2)
-    #     })
-    # chargelist_file = 'chargelist.json'
-    # waitlist_file = 'waitlist.json'
-    # if not os.path.exists(chargelist_file):
-    #     with open(chargelist_file, 'w') as f:
-    #         json.dump([], f)
-    # if not os.path.exists(waitlist_file):
-    #     with open(waitlist_file, 'w') as f:
-    #         json.dump([], f)
-    #
-    # with open(chargelist_file, 'r+') as f:
-    #     data = json.load(f)
-    #     data.extend(chargelist)
-    #     f.seek(0)
-    #     json.dump(data, f)
-    #
-    # with open(waitlist_file, 'r+') as f:
-    #     data = json.load(f)
-    #     data.extend(waitlist)
-    #     f.seek(0)
-    #     json.dump(data, f)
 
+
+def print_result():
+    # pass
+    timer=Timer()
+    chargelist = []
+    waitlist = []
+    pile_list = db.session.query(Charger).all()
+    for pile in pile_list:
+        c_request = db.session.query(ChargeArea.request_id).filter(ChargeArea.pile_id == pile.id).all()
+        print(timer.get_cur_format_time(),len(c_request))
+        if len(c_request) != 0:
+            for tmp in c_request:
+                request = db.session.query(ChargeRequest).filter(ChargeRequest.id == int(tmp[0])).first()
+                name = db.session.query(User.username).filter(User.id == request.user_id).first()[0]
+                chargelist.append((pile.id,name,round(request.currentAmount, 2),round(request.currentFee, 2)))
+    wait_list = db.session.query(WaitArea).all()
+    if len(wait_list) !=0:
+        for wait in wait_list:
+            request = db.session.query(ChargeRequest).filter(ChargeRequest.id == wait.request_id).first()
+            name = db.session.query(User.username).filter(User.id == request.user_id).first()[0]
+            waitlist.append((name,request.charge_mode,round(request.require_amount, 2)))
+    chargelist_file = 'chargelist.txt'
+    waitlist_file = 'waitlist.txt'
+    with open(chargelist_file, 'a') as f:
+        f.write(f'{timer.get_cur_format_time()}: ')
+        for charge in chargelist:
+            f.write(str(charge))
+        f.write('\n')
+    with open(waitlist_file, 'a') as f:
+        f.write(f'{timer.get_cur_format_time()}: ')
+        for wait in waitlist:
+            f.write(str(wait))
+        f.write('\n')
