@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: {
           Authorization: "Bearer " + token,
         },
+        credentials: "omit",
       })
         .then((response) => response.json())
         .then((data) => {
@@ -210,7 +211,7 @@ function updatePileStatus(pileId, status) {
     method: "PUT",
     headers: myHeaders,
     body: JSON.stringify(data),
-    credentials: omit,
+    credentials: "omit",
   })
     .then((response) => response.json())
     .then((data) => {
@@ -294,8 +295,7 @@ pileTable.addEventListener("click", (event) => {
       xhr.credentials = false;
       xhr.open(
         "GET",
-        localStorage.getItem("backendUrl") + `/pile/${pileId}/wait`,
-        true
+        localStorage.getItem("backendUrl") + `/pile/${pileId}/wait`
       );
       var token = sessionStorage.getItem("token");
       xhr.setRequestHeader("Authorization", "Bearer " + token);

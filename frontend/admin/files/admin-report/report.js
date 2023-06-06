@@ -62,7 +62,7 @@ function handleData(data) {
       <td>${item.id}</td>
         <td>${item.chargeTimes}</td>
         <td>${item.chargeAmount}</td>
-        <td>${item.chargeTime}</td>
+        <td>${item.chargeTime.toFixed(2)}</td>
         <td>${item.chargeFee.toFixed(2)}</td>
         <td>${item.serviceFee.toFixed(2)}</td>
         <td>${item.totalFee.toFixed(2)}</td>
@@ -76,12 +76,12 @@ submitButton.addEventListener("click", () => {
   const date = document.getElementById("date-picker").value;
   var token = sessionStorage.getItem("token");
   console.log(date);
-  fetch(localStorage.getItem("backendUrl") + "/report", {
+  fetch(localStorage.getItem("backendUrl") + "/report?date=" + date, {
     headers: {
-      date: String(date),
+      // date: String(date),
       Authorization: "Bearer " + token,
     },
-    credentials: false,
+    credentials: 'omit',
     method: "GET"
   })
     .then((response) => response.json())
