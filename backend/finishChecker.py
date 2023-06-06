@@ -208,3 +208,5 @@ def end_charging_request(user, end_time):
             ChargeWaitArea.request_id == request.id).delete()
         db.session.commit()
     return
+# def print_result():
+#     pass
