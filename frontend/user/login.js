@@ -34,7 +34,6 @@ window.addEventListener("DOMContentLoaded", function () {
 
     // 发送 AJAX 请求
     var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
     xhr.addEventListener("readystatechange", function () {
       if (this.readyState === 4) {
         var data = JSON.parse(xhr.responseText);
