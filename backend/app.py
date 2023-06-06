@@ -21,10 +21,14 @@ def init_pile():
 def run_check():
     with app.app_context():
         check_finish()
+# def run_print():
+#     with app.app_context():
+#         print_result()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-scheduler = BackgroundScheduler()
+scheduler1 = BackgroundScheduler()
+# scheduler2 = BackgroundScheduler()
 api = Api(app)
 jwt = JWTManager(app)
 app.config.from_object(config)
@@ -39,8 +43,10 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
     init_pile()
-scheduler.add_job(func=run_check, trigger='interval', seconds=1)
-scheduler.start()
+scheduler1.add_job(func=run_check, trigger='interval', seconds=1)
+scheduler1.start()
+# scheduler2.add_job(func=run_print, trigger='interval', seconds=)
+# scheduler2.start()
 api.add_resource(user_register, '/user/register')
 api.add_resource(user_login, '/user/login')
 api.add_resource(token_refresh, '/token/refresh')

@@ -27,16 +27,16 @@ charge_record_fields = {
 }
 
 
-def username_validate(value, name):
-    if len(value) < 6 or len(value) > 20:
-        raise ValueError(name + '长度不合法')
-    return value
-
-
-def password_validate(value, name):
-    if len(value) < 8 or len(value) > 100:
-        raise ValueError(name + '长度不合法')
-    return value
+# def username_validate(value, name):
+#     if len(value) < 6 or len(value) > 20:
+#         raise ValueError(name + '长度不合法')
+#     return value
+#
+#
+# def password_validate(value, name):
+#     if len(value) < 8 or len(value) > 100:
+#         raise ValueError(name + '长度不合法')
+#     return value
 
 
 class token_refresh(Resource):
@@ -56,8 +56,8 @@ class token_refresh(Resource):
 class user_register(Resource):
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('username', type=username_validate, help='username invalid must 6-20', required=True)
-        parser.add_argument('password', type=password_validate, help='password invalid must 8-100', required=True)
+        parser.add_argument('username', type=str, required=True)
+        parser.add_argument('password', type=str, required=True)
         data = parser.parse_args()
         if User.find_by_username(data['username']):
             return {
@@ -81,8 +81,8 @@ class user_register(Resource):
 class user_login(Resource):
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('username', type=username_validate, help='username invalid must 6-20', required=True)
-        parser.add_argument('password', type=password_validate, help='password invalid must 8-100', required=True)
+        parser.add_argument('username', type=str, required=True)
+        parser.add_argument('password', type=str, required=True)
         expire_time = datetime.datetime.now() + datetime.timedelta(days=1)
         expire_time_utc = expire_time.astimezone(pytz.timezone('UTC'))
         data = parser.parse_args()
@@ -129,8 +129,8 @@ class user_charge(Resource):
                 "status": status[request.state],
                 "totalAmount": request.battery_size,
                 "waitingArea": w_area,
-                "currentAmount":request.currentAmount,
-                "currentFee":request.currentFee
+                "currentAmount":round(request.currentAmount, 2),
+                "currentFee":round(request.currentFee, 2)
             }
         else:
             return {
@@ -141,9 +141,9 @@ class user_charge(Resource):
     @jwt_required()
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('amount', type=int, help='充电量', required=True)
+        parser.add_argument('amount', type=float, help='充电量', required=True)
         parser.add_argument('fast', type=bool, help='是否快充', required=True)
-        parser.add_argument('totalAmount', type=int, help='', required=True)
+        parser.add_argument('totalAmount', type=float, help='', required=True)
         data = parser.parse_args()
         user = User.find_by_username(get_jwt_identity())
         require_amount = data['amount']
@@ -227,9 +227,9 @@ class user_charge(Resource):
     @jwt_required()
     def put(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('amount', type=int, help='充电量', required=True)
+        parser.add_argument('amount', type=float, help='充电量', required=True)
         parser.add_argument('fast', type=bool, help='是否快充', required=True)
-        parser.add_argument('totalAmount', type=int, help='', required=True)
+        parser.add_argument('totalAmount', type=float, help='', required=True)
         data = parser.parse_args()
         user = User.find_by_username(get_jwt_identity())
         require_amount = data['amount']
@@ -249,8 +249,8 @@ class user_charge(Resource):
                     WaitArea.request_id == record.id).delete()
                 WaitArea(request_id=record.id, type=charge_mode).save_to_db()
                 # 生成charge_id,加入队列
-                his_front_cars = db.session.query(WaitQueue).filter(
-                    WaitQueue.type == charge_mode).count()
+                his_front_cars = db.session.query(ChargeRequest).filter(
+                    ChargeRequest.type == charge_mode).count()
                 if his_front_cars == 0:
                     charge_id = charge_mode + '1'
                 else:
@@ -806,7 +806,7 @@ class sys_time(Resource):
         #     '%Y-%m-%d %H:%M:%S')
         timer=Timer()
         return {
-            "time": timer.get_cur_format_time()
+            "time": int(timer.get_cur_timestamp())*1000
         }
 
 
