@@ -11,34 +11,6 @@ from config import *
 from models import User, ChargeRequest, WaitQueue, WaitArea, ChargeRecord, Charger, ChargeArea, ChargeWaitArea
 from schedule import schedule
 
-charge_record_fields = {
-    "chargeAmount": fields.Float,
-    "chargeEndTime": fields.String,
-    "chargeFee": fields.Float,
-    "chargeStartTime": fields.String,
-    "created_at": fields.String,
-    "deleted_at": fields.String,
-    "id": fields.Integer,
-    "pileId": fields.Integer,
-    "serviceFee": fields.Float,
-    "totalFee": fields.Float,
-    "updated_at": fields.String,
-    "userId": fields.Integer
-}
-
-
-# def username_validate(value, name):
-#     if len(value) < 6 or len(value) > 20:
-#         raise ValueError(name + '长度不合法')
-#     return value
-#
-#
-# def password_validate(value, name):
-#     if len(value) < 8 or len(value) > 100:
-#         raise ValueError(name + '长度不合法')
-#     return value
-
-
 class token_refresh(Resource):
     @jwt_required()
     def post(self):
@@ -320,11 +292,11 @@ class user_charge(Resource):
                 db.session.query(WaitArea).filter(WaitArea.request_id == request.id).delete()
                 db.session.query(WaitQueue).filter(WaitQueue.charge_id == request.charge_id).delete()
                 db.session.commit()
-            # elif request.state==2:
-            #     success=True
-            #     db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
-            #     db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
-            #     db.session.commit()
+            elif request.state==2:
+                success=True
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+                db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
+                db.session.commit()
             else:
                 success = False
                 error_msg = '车辆不在等待区，取消失败'
@@ -466,10 +438,10 @@ class finish_charge(Resource):
                 db.session.query(ChargeWaitArea).filter(
                     ChargeWaitArea.request_id == request.id).delete()
                 db.session.commit()
-            elif request.state==2:
-                db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
-                db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
-                db.session.commit()
+            # elif request.state==2:
+            #     db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+            #     db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
+            #     db.session.commit()
             else:
                 db.session.query(ChargeRequest).filter(ChargeRequest.user_id == user.id).delete()
                 db.session.commit()
@@ -800,10 +772,6 @@ class get_report(Resource):
 
 class sys_time(Resource):
     def get(self):
-        # start_time = datetime.datetime.now()
-        # curtime = datetime.datetime.fromtimestamp(
-        #     int((datetime.datetime.now().timestamp() - start_time.timestamp()) + start_time.timestamp())).strftime(
-        #     '%Y-%m-%d %H:%M:%S')
         timer=Timer()
         return {
             "time": int(timer.get_cur_timestamp())*1000

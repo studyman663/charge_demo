@@ -1,4 +1,6 @@
 import datetime
+import json
+import os
 
 from sqlalchemy import and_
 
@@ -208,5 +210,50 @@ def end_charging_request(user, end_time):
             ChargeWaitArea.request_id == request.id).delete()
         db.session.commit()
     return
-# def print_result():
-#     pass
+def print_result():
+    pass
+    # chargelist = []
+    # waitlist=[]
+    # pile_list = db.session.query(Charger).all()
+    # for pile in pile_list:
+    #     c_request=db.session.query(ChargeArea.request_id).filter(ChargeArea.pile_id==pile.id).all()
+    #     if len(c_request)!=0:
+    #         for tmp in c_request:
+    #             request=db.session.query(ChargeRequest).filter(ChargeRequest.id==tmp).first()
+    #             name=db.session.query(User.username).filter(User.id==request.user_id).first()
+    #             chargelist.append({
+    #                 "pile_id":pile.id,
+    #                 "car_id": name,
+    #                 "currentAmount": round(request.currentAmount, 2),
+    #                 "currentFee": round(request.currentFee, 2)
+    #             })
+    # wait_list=db.session.query(WaitArea).all()
+    # for wait in wait_list:
+    #     request=db.session.query(ChargeRequest).filter(ChargeRequest.id==wait.request_id).first()
+    #     name = db.session.query(User.username).filter(User.id == request.user_id).first()
+    #     waitlist.append({
+    #         "car_id": name,
+    #         "charge_mode": request.charge_mode,
+    #         "require_amount": round(request.require_amount, 2)
+    #     })
+    # chargelist_file = 'chargelist.json'
+    # waitlist_file = 'waitlist.json'
+    # if not os.path.exists(chargelist_file):
+    #     with open(chargelist_file, 'w') as f:
+    #         json.dump([], f)
+    # if not os.path.exists(waitlist_file):
+    #     with open(waitlist_file, 'w') as f:
+    #         json.dump([], f)
+    #
+    # with open(chargelist_file, 'r+') as f:
+    #     data = json.load(f)
+    #     data.extend(chargelist)
+    #     f.seek(0)
+    #     json.dump(data, f)
+    #
+    # with open(waitlist_file, 'r+') as f:
+    #     data = json.load(f)
+    #     data.extend(waitlist)
+    #     f.seek(0)
+    #     json.dump(data, f)
+
