@@ -228,7 +228,6 @@ def print_result():
     pile_list = db.session.query(Charger).all()
     for pile in pile_list:
         c_request = db.session.query(ChargeArea.request_id).filter(ChargeArea.pile_id == pile.id).all()
-        print(timer.get_cur_format_time(),len(c_request))
         if len(c_request) != 0:
             for tmp in c_request:
                 request = db.session.query(ChargeRequest).filter(ChargeRequest.id == int(tmp[0])).first()

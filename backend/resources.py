@@ -222,7 +222,7 @@ class user_charge(Resource):
                 WaitArea(request_id=record.id, type=charge_mode).save_to_db()
                 # 生成charge_id,加入队列
                 his_front_cars = db.session.query(ChargeRequest).filter(
-                    ChargeRequest.type == charge_mode).count()
+                    ChargeRequest.charge_mode == charge_mode).count()
                 if his_front_cars == 0:
                     charge_id = charge_mode + '1'
                 else:
