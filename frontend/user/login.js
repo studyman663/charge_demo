@@ -40,7 +40,11 @@ window.addEventListener("DOMContentLoaded", function () {
         console.log(data);
         if (data.code === 0) {
           localStorage.setItem("clock", "0");
-          if (username.trim() === "admin123" && password.trim() === "123456") {
+          if (
+            // group 10: admin_bupt_10 group 4: admin
+            username.trim() === "admin" &&
+            password.trim() === "admin"
+          ) {
             var backendUrl = document.getElementById("back-end_input").value;
             if (backendUrl !== "") {
               console.log(2);

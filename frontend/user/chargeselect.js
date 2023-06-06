@@ -69,42 +69,36 @@ submitButton.addEventListener("click", function () {
   xhr.setRequestHeader("Accept", "*/*");
 
   var data = JSON.stringify({
-    amount: amount,
-    totalAmount: totalAmount,
+    amount: parseFloat(amount),
+    totalAmount: parseFloat(totalAmount),
     fast: fast,
   });
+
+  console.log(data);
 
   xhr.send(data);
 
   xhr.addEventListener("readystatechange", function () {
     if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        sessionStorage.setItem("jump", "0");
-        var jump = sessionStorage.getItem("jump");
-        console.log(jump);
-
-        var data = JSON.parse(xhr.responseText);
-        var pile = data.pile;
-        var amount = data.amount;
-        var status = data.status;
-        var totalAmount = data.totalAmount;
-        var chargingArea = data.chargingArea;
-        var position = data.position;
-        var waitingArea = data.waitingArea;
-        var fast = data.fast;
-        sessionStorage.setItem("pile", pile);
-        sessionStorage.setItem("amount", amount);
-        sessionStorage.setItem("status", status);
-        sessionStorage.setItem("totalAmount", totalAmount);
-        sessionStorage.setItem("chargingArea", chargingArea);
-        sessionStorage.setItem("position", position);
-        sessionStorage.setItem("waitingArea", waitingArea);
-        sessionStorage.setItem("fast", fast);
-        window.location.href = "checkcurrentbill.html";
-      } else {
-        alert("error: sumbit failed");
-        return;
-      }
+      var data = JSON.parse(xhr.responseText);
+      console.log(data);
+      var pile = data.pile;
+      var amount = data.amount;
+      var status = data.status;
+      var totalAmount = data.totalAmount;
+      var chargingArea = data.chargingArea;
+      var position = data.position;
+      var waitingArea = data.waitingArea;
+      var fast = data.fast;
+      sessionStorage.setItem("pile", pile);
+      sessionStorage.setItem("amount", amount);
+      sessionStorage.setItem("status", status);
+      sessionStorage.setItem("totalAmount", totalAmount);
+      sessionStorage.setItem("chargingArea", chargingArea);
+      sessionStorage.setItem("position", position);
+      sessionStorage.setItem("waitingArea", waitingArea);
+      sessionStorage.setItem("fast", fast);
+      window.location.href = "checkcurrentbill.html";
     } else {
       return;
     }

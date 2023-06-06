@@ -59,8 +59,10 @@ function myFunction() {
         fast = data.fast;
         waitingArea = data.waitingArea;
         chargingArea = data.chargingArea;
-        currentAmountelement.textContent = data.currentAmount;
-        currentFeeelement.textContent = data.currentFee;
+        currentAmountelement.textContent = parseFloat(
+          data.currentAmount
+        ).toFixed(2);
+        currentFeeelement.textContent = parseFloat(data.currentFee).toFixed(2);
         // waitingAreaelement.textContent = data.waitingArea；
         waitingAreaelement.textContent =
           data.waitingArea === true ? "是" : "否";
@@ -265,7 +267,8 @@ function Finish() {
 var confirmCancel = document.getElementById("u200");
 confirmCancel.addEventListener("click", function () {
   console.log(state);
-  if (state === "充电中" || state === "充电区等候中") {
+  //  || state === "充电区等候中"
+  if (state === "充电中") {
     var frame = document.getElementById("u152");
     frame.style.display = "none";
 
