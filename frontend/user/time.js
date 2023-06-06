@@ -36,7 +36,7 @@ function updateTimestamp() {
   xhr.send();
 }
 
-let intervalId = setInterval(updateTimestamp, 10000);
+let intervalId = setInterval(updateTimestamp, 1000);
 // setTimeout(function () {
 //   clearInterval(intervalId);
 //   console.log("定时器已暂停");

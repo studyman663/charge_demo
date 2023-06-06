@@ -42,8 +42,8 @@ window.addEventListener("DOMContentLoaded", function () {
           localStorage.setItem("clock", "0");
           if (
             // group 10: admin_bupt_10 group 4: admin
-            username.trim() === "admin" &&
-            password.trim() === "admin"
+            username.trim() === "admin_bupt_10" &&
+            password.trim() === "admin_bupt_10"
           ) {
             var backendUrl = document.getElementById("back-end_input").value;
             if (backendUrl !== "") {
