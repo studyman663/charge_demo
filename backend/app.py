@@ -1,3 +1,5 @@
+import time
+
 import config
 from exts import db
 import datetime
@@ -5,7 +7,7 @@ from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
-from finishChecker import check_finish
+from finishChecker import check_finish,print_result
 from resources import user_register, user_login, token_refresh, sys_time, user_charge, sys_ping, finish_charge, \
     get_single_bill, get_bills, manage_pile, get_pile_wait, get_piles, get_report
 from models import Charger, User
@@ -21,14 +23,14 @@ def init_pile():
 def run_check():
     with app.app_context():
         check_finish()
-# def run_print():
-#     with app.app_context():
-#         print_result()
+def run_print():
+    with app.app_context():
+        print_result()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 scheduler1 = BackgroundScheduler()
-# scheduler2 = BackgroundScheduler()
+scheduler2 = BackgroundScheduler()
 api = Api(app)
 jwt = JWTManager(app)
 app.config.from_object(config)
@@ -45,8 +47,8 @@ with app.app_context():
     init_pile()
 scheduler1.add_job(func=run_check, trigger='interval', seconds=1)
 scheduler1.start()
-# scheduler2.add_job(func=run_print, trigger='interval', seconds=)
-# scheduler2.start()
+scheduler2.add_job(func=run_print, trigger='interval', seconds=config.print_time)
+scheduler2.start()
 api.add_resource(user_register, '/user/register')
 api.add_resource(user_login, '/user/login')
 api.add_resource(token_refresh, '/token/refresh')

@@ -1,4 +1,7 @@
 import datetime
+import time
+
+
 def singleton(cls):
     _instance = {}
 
@@ -10,16 +13,16 @@ def singleton(cls):
 
 @singleton
 class Timer(object):
-    start_time = 0
+    flag_time=datetime.datetime.now()
+    start_time = datetime.datetime(2023, 6, 5, 10, 0, 0)
     speed = 20
     def __init__(self):
-        self.start_time = datetime.datetime.now()
-
+        pass
     def get_cur_timestamp(self):
-        return int((datetime.datetime.now().timestamp() - self.start_time.timestamp()) * self.speed + self.start_time.timestamp())
+        return int((datetime.datetime.now().timestamp() - self.flag_time.timestamp()) * self.speed + self.start_time.timestamp())
 
     def get_cur_format_time(self):
-        return datetime.datetime.fromtimestamp(int((datetime.datetime.now().timestamp() - self.start_time.timestamp()) * self.speed + self.start_time.timestamp() )).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.datetime.fromtimestamp(int((datetime.datetime.now().timestamp() - self.flag_time.timestamp()) * self.speed + self.start_time.timestamp() )).strftime('%Y-%m-%d %H:%M:%S')
 
 
 # if __name__ == '__main__':
