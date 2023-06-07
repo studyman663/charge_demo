@@ -14,7 +14,7 @@ def singleton(cls):
 @singleton
 class Timer(object):
     flag_time=datetime.datetime.now()
-    start_time = datetime.datetime(2023, 6, 6, 5, 55, 0)
+    start_time = datetime.datetime(2023, 6, 6, 5, 58, 0)
     speed = 20
     def __init__(self):
         pass

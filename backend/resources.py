@@ -301,6 +301,11 @@ class user_charge(Resource):
                 db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
                 db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
                 db.session.commit()
+            # elif request.state==5:
+            #     success=True
+            #     db.session.query(ChargeRequest).filter(ChargeRequest.id == request.id).delete()
+            #     db.session.query(ChargeArea).filter(ChargeArea.request_id == request.id).delete()
+            #     db.session.commit()
             else:
                 success = False
                 error_msg = '车辆不在等待区，取消失败'
