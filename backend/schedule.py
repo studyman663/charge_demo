@@ -1,3 +1,5 @@
+import time
+
 from sqlalchemy import and_
 from models import ChargeRequest, ChargeArea, ChargeWaitArea, WaitArea, ChargeRecord, Charger, WaitQueue
 from Timer import Timer
@@ -61,17 +63,22 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
             db.session.query(ChargeWaitArea).filter(
                 ChargeWaitArea.request_id == request_id).delete()
             if request_id == charge_list[0]:
-                db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({"state": 3 })
-                db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({"start_time": Timer().get_cur_timestamp()})
+                state = db.session.query(ChargeRequest.state).filter(ChargeRequest.id == request_id).first()[0]
+                if int(state) != 5:
+                    db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({"start_time": Timer().get_cur_timestamp()})
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({"state": 3})
+                # db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({"start_time": Timer().get_cur_timestamp()})
             else:
                 db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({"state": 2 })
         first_req_id = charge_list[0] if len(charge_list) > 0 else None
         if first_req_id is not None:
             req = db.session.query(ChargeRequest).filter(
                 ChargeRequest.id == first_req_id[0]).first()
-            if req.state == 1 or req.state == 2 or req.state == 4 or req.state == 5:
+            if req.state == 1 or req.state == 2 or req.state == 4:
                 db.session.query(ChargeRequest).filter(ChargeRequest.id == first_req_id[0]).update({"state": 3 })
                 db.session.query(ChargeRequest).filter(ChargeRequest.id == first_req_id[0]).update({"start_time": Timer().get_cur_timestamp()})
+            if req.state == 5:
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == first_req_id[0]).update({"state": 3})
         db.session.commit()
 
     elif schedule_type == 2:  # 充电区队没满时，来了一辆车
@@ -146,20 +153,25 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
         # 直接到了队首，直接充电
         if str(request_id) == charge_list[0][0] and db.session.query(ChargeRequest).filter(
                 and_(ChargeRequest.charge_pile_id == pile_id, ChargeRequest.state == 3)).first() is None:
+            state=db.session.query(ChargeRequest.state).filter(ChargeRequest.id == request_id).first()[0]
+            if int(state) !=5:
+                db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({
+                    "start_time": Timer().get_cur_timestamp()
+                })
             db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({
                 "state": 3  # 正在充电
-            })
-            db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({
-                "start_time": Timer().get_cur_timestamp()
             })
         else:
             db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({
                 "state": 2 if not error else 5  # 充电区等待
             })
         # 写数据库
+        # amount=db.session.query(ChargeRequest.currentAmount).filter(ChargeRequest.id == request_id).first()[0]
+        # fee = db.session.query(ChargeRequest.currentFee).filter(ChargeRequest.id == request_id).first()[0]
         db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id).update({
             "charge_pile_id": pile_id
         })
+        # print(f'charge_pile_id: {pile_id},"currentAmount":{float(amount)},"currentFee":{float(fee)}')
         db.session.commit()
 
     elif schedule_type == 3:  # 充电桩开启
@@ -203,5 +215,7 @@ def schedule(schedule_type, request_id, type=None, err_charger_id=None, must_sch
         charge_wait_list = db.session.query(ChargeWaitArea.request_id).filter(
             ChargeWaitArea.type == charge_done[0].charge_mode).all()
         for request_id in charge_wait_list:
+            db.session.query(ChargeRequest).filter(ChargeRequest.id == request_id[0]).update({"state": 5})
+            db.session.commit()
             schedule(2, request_id[0], must_sch=True, error=True)
         db.session.commit()

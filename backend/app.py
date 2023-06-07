@@ -2,6 +2,7 @@ import os
 import time
 
 import config
+from Timer import Timer
 from exts import db
 import datetime
 from flask import Flask, jsonify
@@ -31,7 +32,7 @@ def run_print():
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 scheduler1 = BackgroundScheduler()
-# scheduler2 = BackgroundScheduler()
+scheduler2 = BackgroundScheduler()
 api = Api(app)
 jwt = JWTManager(app)
 app.config.from_object(config)
@@ -46,10 +47,11 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
     init_pile()
+timer=Timer()
 scheduler1.add_job(func=run_check, trigger='interval', seconds=1)
-scheduler1.add_job(func=run_print, trigger='interval', seconds=config.print_time)
+scheduler2.add_job(func=run_print, trigger='interval', seconds=config.print_time)
 scheduler1.start()
-# scheduler2.start()
+scheduler2.start()
 api.add_resource(user_register, '/user/register')
 api.add_resource(user_login, '/user/login')
 api.add_resource(token_refresh, '/token/refresh')
