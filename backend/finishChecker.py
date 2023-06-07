@@ -53,12 +53,10 @@ def update_charging_request(request, cur_time):
                 cur_amount * fees[begin_time_zone - 1]))  # 充电费用
     else:
         # 分别计算开始时间到临界值的时间，结束时间到临界值的时间。单位为秒
-        diff_time1 = (clocks[begin_time_zone] - (
-            begin_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - 1) * 3600 + \
-                     (60 - begin_time.minute) * \
-                     60 + 60 - begin_time.second
-        diff_time2 = ((end_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - clocks[
-            (end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
+        diff_time1 = (clocks[begin_time_zone] - (begin_time.hour + 1) % 24) * 3600 + (
+                60 - begin_time.minute - 1) * 60 + 60 - begin_time.second
+        diff_time2 = (end_time.hour - clocks[
+            (end_time_zone - 1) % len(clocks)]) % 24 * 3600 + end_time.minute * 60 + end_time.second
         zones = []  # 要计算的时间区域。①如果开始区域为2，结束为5，得到2、3、4、5；②如果开始为5，结束为2，得到5、6、1、2
         if begin_time_zone < end_time_zone:
             for i in range(begin_time_zone, end_time_zone + 1):
@@ -143,13 +141,10 @@ def end_charging_request(user, end_time):
                     charged_amount * fees[begin_time_zone - 1]))  # 充电费用
         else:
             # 分别计算开始时间到临界值的时间，结束时间到临界值的时间。单位为秒
-            diff_time1 = (clocks[begin_time_zone] - (
-                begin_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - 1) * 3600 + \
-                         (60 - begin_time.minute) * \
-                         60 + 60 - begin_time.second
-            diff_time2 = (
-                                 (end_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - clocks[
-                             (end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
+            diff_time1 = (clocks[begin_time_zone] - (begin_time.hour + 1) % 24) * 3600 + (
+                    60 - begin_time.minute - 1) * 60 + 60 - begin_time.second
+            diff_time2 = (end_time.hour - clocks[
+                (end_time_zone - 1) % len(clocks)]) % 24 * 3600 + end_time.minute * 60 + end_time.second
             zones = []  # 要计算的时间区域。①如果开始区域为2，结束为5，得到2、3、4、5；②如果开始为5，结束为2，得到5、6、1、2
             if begin_time_zone < end_time_zone:
                 for i in range(begin_time_zone, end_time_zone + 1):

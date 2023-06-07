@@ -81,7 +81,7 @@ class user_charge(Resource):
     def get(self):
         user = User.find_by_username(get_jwt_identity())
         request = db.session.query(ChargeRequest).filter(
-            ChargeRequest.user_id == user.id).order_by(ChargeRequest.id.desc()).first()
+            ChargeRequest.user_id == user.id).order_by(ChargeRequest.user_id.desc()).first()
         if request is not None:
             fast = True if request.charge_mode == 'F' else False
             w_area = True if request.state == 1 or request.state == 4 else False
@@ -188,7 +188,9 @@ class user_charge(Resource):
                 "position": int(position),
                 "status": status[state],
                 "totalAmount": float(data['totalAmount']),
-                "waitingArea": w_area
+                "waitingArea": w_area,
+                "currentAmount": round(charge_request.currentAmount, 2),
+                "currentFee": round(charge_request.currentFee, 2)
             }
         else:
             return {
@@ -269,7 +271,9 @@ class user_charge(Resource):
                 "position": int(record.charge_id[1:]),
                 "status": status[state],
                 "totalAmount": float(data['totalAmount']),
-                "waitingArea": w_area
+                "waitingArea": w_area,
+                "currentAmount": round(record.currentAmount, 2),
+                "currentFee": round(record.currentFee, 2)
             }
         else:
             return {
@@ -365,13 +369,10 @@ class finish_charge(Resource):
                             charged_amount * fees[begin_time_zone - 1]))  # 充电费用
                 else:
                     # 分别计算开始时间到临界值的时间，结束时间到临界值的时间。单位为秒
-                    diff_time1 = (clocks[begin_time_zone] - (
-                        begin_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - 1) * 3600 + \
-                                 (60 - begin_time.minute) * \
-                                 60 + 60 - begin_time.second
-                    diff_time2 = (
-                                         (end_time.hour if begin_time.hour >= 7 else (begin_time.hour + 24)) - clocks[
-                                     (end_time_zone - 1) % len(clocks)]) * 3600 + end_time.minute * 60 + end_time.second
+                    diff_time1 = (clocks[begin_time_zone] - (begin_time.hour + 1) % 24) * 3600 + (
+                            60 - begin_time.minute - 1) * 60 + 60 - begin_time.second
+                    diff_time2 = (end_time.hour - clocks[
+                        (end_time_zone - 1) % len(clocks)]) % 24 * 3600 + end_time.minute * 60 + end_time.second
                     zones = []  # 要计算的时间区域。①如果开始区域为2，结束为5，得到2、3、4、5；②如果开始为5，结束为2，得到5、6、1、2
                     if begin_time_zone < end_time_zone:
                         for i in range(begin_time_zone, end_time_zone + 1):
